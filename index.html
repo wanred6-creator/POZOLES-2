@@ -115,12 +115,12 @@
             <p id="modalInstruction" style="font-size:0.8rem; color:#666; margin-top:5px;"></p>
             
             <div id="sizeContainer" style="margin-top:10px; display:none;">
-                <label style="font-size:0.8rem; font-weight:bold; color:#555;">Tamaño:</label>
+                <label style="font-size:0.8rem; font-weight:bold; color:#555;" id="sizeLabel">Tamaño:</label>
                 <div id="sizeOptions" style="display:flex; gap:8px; margin-top:5px"></div>
             </div>
 
             <div id="meatContainer" style="margin-top:10px;">
-                <label style="font-size:0.8rem; font-weight:bold; color:#555;">Opciones:</label>
+                <label style="font-size:0.8rem; font-weight:bold; color:#555;" id="optionsLabel">Opciones:</label>
                 <div id="meatOptions" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:5px"></div>
             </div>
 
@@ -165,7 +165,20 @@
             { id: 1, name: "Pozole", category: "Pozoles y Caldos", sizes: [{name: "Chica", price: 80}, {name: "Grande", price: 100}], options: ["Pollo", "Maciza", "Cabeza", "Surtida"], img: "pozole.jpg", hasTakeout: true, isMulti: false },
             { id: 2, name: "Pancita", category: "Pozoles y Caldos", sizes: [{name: "Chica", price: 80}, {name: "Grande", price: 100}], options: [], img: "pancita.jpg", hasTakeout: true, isMulti: false },
             { id: 3, name: "Flautas", category: "Antojitos", price: 75, options: ["Pollo", "Carne"], img: "flautas.jpg", hasTakeout: false, isMulti: false },
-            { id: 4, name: "Gordita", category: "Antojitos", price: 35, options: ["Chicharrón", "Pollo", "Carne", "Quesillo"], img: "gordita.jpg", hasTakeout: false, isMulti: true },
+            { 
+                id: 4, 
+                name: "Gordita", 
+                category: "Antojitos", 
+                price: 35, 
+                gorditaBases: [
+                    { name: "Gordita clásica (de chicharrón prensado)", price: 35 },
+                    { name: "Gordita sola con quesillo (sin chicharrón)", price: 35 }
+                ],
+                options: ["Quesillo", "Carne", "Pollo"], 
+                img: "gordita.jpg", 
+                hasTakeout: false, 
+                isGordita: true 
+            },
             { id: 5, name: "Quesadilla", category: "Antojitos", price: 30, options: ["Quesillo", "Carne", "Chicharrón", "Hongos", "Flor", "Pollo"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
             { id: 6, name: "Pambazo", category: "Antojitos", price: 35, options: ["Sin papa", "Papa con chorizo", "Pollo", "Carne", "Quesillo"], img: "pambazo.jpg", hasTakeout: false, isMulti: true },
             { id: 7, name: "Tostada", category: "Antojitos", price: 30, options: ["Pollo", "Res", "Pata"], img: "tostada.jpg", hasTakeout: false, isMulti: false },
@@ -180,6 +193,7 @@
         let activeTable = "Mesa 1";
         let currentCartLocation = "Mesa 1";
         let selectedSize = null;
+        let selectedGorditaBase = null;
         let selectedOptions = []; 
         let currentItem = null;
 
@@ -220,39 +234,60 @@
             selectedOptions = [];
             document.getElementById('modalItemName').innerText = `${currentItem.name} (${activeTable})`;
             
-            // Instrucción dinámica según el platillo
-            if (currentItem.isMulti) {
-                if (currentItem.name === "Pambazo") {
-                    document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (el precio base incluye 1, cada ingrediente extra cuesta $10)";
-                } else {
-                    document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (el precio base incluye 1, cada ingrediente extra cuesta $5)";
-                }
+            const sizeContainer = document.getElementById('sizeContainer');
+            const sizeOptionsDiv = document.getElementById('sizeOptions');
+            const meatContainer = document.getElementById('meatContainer');
+
+            if (currentItem.isGordita) {
+                document.getElementById('modalInstruction').innerText = "selecciona hasta 2 opciones ingrediente extra cuesta $5";
+                
+                sizeContainer.style.display = "block";
+                document.getElementById('sizeLabel').innerText = "Tipo de Gordita:";
+                selectedGorditaBase = currentItem.gorditaBases[0];
+                sizeOptionsDiv.innerHTML = currentItem.gorditaBases.map(b => `
+                    <div class="option-pill ${b.name === selectedGorditaBase.name ? 'active' : ''}" onclick="selectGorditaBase('${b.name}', ${b.price}, this)">${b.name} ($${b.price})</div>`).join('');
+                
+                document.getElementById('optionsLabel').innerText = "Ingredientes extra (+$5 c/u):";
+                renderOptions();
             } else {
-                document.getElementById('modalInstruction').innerText = "";
+                if (currentItem.isMulti) {
+                    if (currentItem.name === "Pambazo") {
+                        document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (cada ingrediente extra cuesta $10)";
+                    } else {
+                        document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (el precio base incluye 1, cada ingrediente extra cuesta $5)";
+                    }
+                } else {
+                    document.getElementById('modalInstruction').innerText = "";
+                }
+
+                document.getElementById('optionsLabel').innerText = "Opciones:";
+                if (currentItem.sizes) {
+                    sizeContainer.style.display = "block";
+                    document.getElementById('sizeLabel').innerText = "Tamaño:";
+                    selectedSize = currentItem.sizes[1]; 
+                    sizeOptionsDiv.innerHTML = currentItem.sizes.map(s => `
+                        <div class="option-pill ${s.name === selectedSize.name ? 'active' : ''}" onclick="selectSize('${s.name}', ${s.price}, this)">${s.name} ($${s.price})</div>`).join('');
+                } else {
+                    sizeContainer.style.display = "none";
+                    selectedSize = null;
+                }
+                renderOptions();
             }
 
             document.getElementById('itemNotes').value = "";
             document.getElementById('takeoutCheck').checked = false;
             document.getElementById('takeoutContainer').style.display = currentItem.hasTakeout ? 'block' : 'none';
-            
-            const sizeContainer = document.getElementById('sizeContainer');
-            const sizeOptionsDiv = document.getElementById('sizeOptions');
-            if (currentItem.sizes) {
-                sizeContainer.style.display = "block";
-                selectedSize = currentItem.sizes[1]; 
-                sizeOptionsDiv.innerHTML = currentItem.sizes.map(s => `
-                    <div class="option-pill ${s.name === selectedSize.name ? 'active' : ''}" onclick="selectSize('${s.name}', ${s.price}, this)">${s.name} ($${s.price})</div>`).join('');
-            } else {
-                sizeContainer.style.display = "none";
-                selectedSize = null;
-            }
-
-            renderOptions();
             document.getElementById('customModal').style.display = 'flex';
         }
 
         function selectSize(name, price, el) {
             selectedSize = { name, price };
+            document.querySelectorAll('#sizeOptions .option-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function selectGorditaBase(name, price, el) {
+            selectedGorditaBase = { name, price };
             document.querySelectorAll('#sizeOptions .option-pill').forEach(p => p.classList.remove('active'));
             el.classList.add('active');
         }
@@ -272,7 +307,7 @@
         }
 
         function toggleOption(opt, el) {
-            if (currentItem.isMulti) {
+            if (currentItem.isMulti || currentItem.isGordita) {
                 if (selectedOptions.includes(opt)) {
                     selectedOptions = selectedOptions.filter(o => o !== opt);
                     el.classList.remove('active');
@@ -290,25 +325,28 @@
         function agregarAlCarrito() {
             let price = selectedSize ? selectedSize.price : currentItem.price;
             let finalName = currentItem.name;
-            if (selectedSize) finalName += ` (${selectedSize.name})`;
             let takeout = document.getElementById('takeoutCheck').checked;
             
-            if (currentItem.name === "Agua de Jamaica" && selectedOptions.includes("Medio litro ($20)")) price = 20;
-            
-            if (currentItem.isMulti) {
-                if (currentItem.name === "Pambazo") {
-                    // Base incluye 1 opción. Cada ingrediente extra a partir del segundo suma $10.
-                    if (selectedOptions.length > 1) {
-                        price = currentItem.price + (selectedOptions.length - 1) * 10;
+            if (currentItem.isGordita) {
+                price = selectedGorditaBase.price + (selectedOptions.length * 5);
+                finalName = `${currentItem.name} (${selectedGorditaBase.name})`;
+            } else {
+                if (selectedSize) finalName += ` (${selectedSize.name})`;
+                if (currentItem.name === "Agua de Jamaica" && selectedOptions.includes("Medio litro ($20)")) price = 20;
+                
+                if (currentItem.isMulti) {
+                    if (currentItem.name === "Pambazo") {
+                        if (selectedOptions.length > 1) {
+                            price = currentItem.price + (selectedOptions.length - 1) * 10;
+                        } else {
+                            price = currentItem.price;
+                        }
                     } else {
-                        price = currentItem.price;
-                    }
-                } else {
-                    // Base incluye 1 opción (ej. chicharrón en gordita). Cada ingrediente extra a partir del segundo suma $5.
-                    if (selectedOptions.length > 1) {
-                        price = currentItem.price + (selectedOptions.length - 1) * 5;
-                    } else {
-                        price = currentItem.price;
+                        if (selectedOptions.length > 1) {
+                            price = currentItem.price + (selectedOptions.length - 1) * 5;
+                        } else {
+                            price = currentItem.price;
+                        }
                     }
                 }
             }
@@ -316,7 +354,7 @@
             if (takeout) { price += 5; finalName += " (Llevar)"; }
             
             const notes = document.getElementById('itemNotes').value;
-            const key = currentItem.id + (selectedSize ? selectedSize.name : '') + selectedOptions.join(',') + takeout + notes;
+            const key = currentItem.id + (selectedSize ? selectedSize.name : '') + (selectedGorditaBase ? selectedGorditaBase.name : '') + selectedOptions.join(',') + takeout + notes;
             
             if (!carts[activeTable]) carts[activeTable] = {};
             carts[activeTable][key] = { 
