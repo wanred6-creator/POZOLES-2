@@ -3,332 +3,614 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pozoles Las Tías - Menú Digital</title>
-    <!-- Tailwind CSS para un diseño limpio y moderno -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Pozoles Las Tías</title>
+    <meta name="theme-color" content="#d9534f">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-image: url('negocio.jpg'); background-size: cover; background-position: center; background-attachment: fixed; padding-bottom: 110px; }
+        header { background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('negocio.jpg'); background-size: cover; background-position: center; color: white; padding: 30px 18px; text-align: center; font-size: 1.5rem; font-weight: bold; cursor: pointer; user-select: none; }
+        .container { padding: 20px; max-width: 600px; margin: -20px auto 20px auto; background: rgba(255, 255, 255, 0.95); border-radius: 20px 20px 0 0; }
+        .btn-admin { background: #333; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; margin-bottom: 10px; cursor: pointer; font-weight: bold; }
+        
+        .table-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 5px 0 15px 0; scrollbar-width: none; }
+        .table-tabs::-webkit-scrollbar { display: none; }
+        .table-tab { padding: 8px 14px; background: #eee; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.85rem; white-space: nowrap; flex-shrink: 0; transition: all 0.2s; }
+        .table-tab.active { background: #d9534f; color: white; }
+
+        .menu-item { background: white; padding: 12px; margin-bottom: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .menu-img { width: 75px; height: 75px; border-radius: 10px; object-fit: cover; border: 1px solid #eee; flex-shrink: 0; }
+        .add-btn { background: #d9534f; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 100; padding: 20px; }
+        .modal-content { background: white; width: 100%; max-width: 400px; padding: 20px; border-radius: 12px; max-height: 90vh; overflow-y: auto; }
+        .cart-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .qty-btn { padding: 5px 10px; border: none; background: #eee; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .option-pill { padding: 8px 12px; background:#eee; border-radius:15px; cursor:pointer; font-size:0.8rem; border: 1px solid #ddd; }
+        .option-pill.active { background: #d9534f; color: white; border-color: #d9534f; }
+        
+        /* Barra Inferior Múltiple (Menú General) */
+        .bottom-bar-multi { position: fixed; bottom: 0; width: 100%; background: white; padding: 10px; border-top: 1px solid #ddd; max-width: 600px; left: 50%; transform: translateX(-50%); z-index: 5; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+        .bottom-btn { background: #d9534f; color: white; border: none; padding: 8px 2px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer; text-align: center; }
+        .bottom-btn.llevar { background: #333; }
+
+        /* Barra Flotante de Previsualización (Modo QR por Mesa) */
+        .bottom-bar-single { position: fixed; bottom: 15px; width: calc(100% - 30px); background: #25d366; color: white; padding: 12px 20px; border-radius: 12px; max-width: 570px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.25); font-weight: bold; transition: transform 0.2s; }
+        .bottom-bar-single:active { transform: translateX(-50%) scale(0.98); }
+
+        .qr-card { background: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; text-align: center; }
+    </style>
 </head>
-<body class="bg-gray-100 text-gray-800 pb-28">
+<body>
 
-    <!-- Encabezado -->
-    <header class="bg-red-700 text-white p-4 shadow-md sticky top-0 z-30 text-center">
-        <h1 class="text-xl font-bold tracking-wide">POZOLES LAS TÍAS</h1>
-        <p id="table-indicator" class="text-xs text-red-100 mt-1 font-medium">Estás ordenando desde: Mesa 1</p>
-    </header>
+    <!-- TOCA 5 VECES AQUÍ PARA ENTRAR A ADMINISTRACIÓN -->
+    <header onclick="handleHeaderTap()">Pozoles Las Tías 🍲</header>
 
-    <!-- Contenedor Principal del Menú -->
-    <main class="max-w-md mx-auto p-4 space-y-4">
-        <div id="menu-container" class="space-y-4">
-            <!-- Los platillos se cargan dinámicamente aquí -->
+    <div class="container" id="main-view">
+        <p id="tableIndicatorText" style="font-size: 0.85rem; font-weight: bold; color: #d9534f; margin-bottom: 8px; text-align: center; background: #fdf2f2; padding: 6px; border-radius: 6px;"></p>
+        
+        <!-- Pestañas de respaldo para menú general -->
+        <div class="table-tabs" id="tableTabsContainer">
+            <button class="table-tab active" onclick="setActiveTable('Mesa 1')">Mesa 1</button>
+            <button class="table-tab" onclick="setActiveTable('Mesa 2')">Mesa 2</button>
+            <button class="table-tab" onclick="setActiveTable('Mesa 3')">Mesa 3</button>
+            <button class="table-tab" onclick="setActiveTable('Mesa 4')">Mesa 4</button>
+            <button class="table-tab" onclick="setActiveTable('Para llevar')">Para llevar</button>
         </div>
-    </main>
 
-    <!-- Barra Inferior de Mesas y Carrito -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 shadow-lg z-30 max-w-md mx-auto flex justify-around items-center">
-        <button onclick="cambiarMesa('M1')" class="table-btn px-2.5 py-1.5 rounded text-xs font-bold transition-all bg-red-700 text-white shadow" data-table="M1">M1 (0)</button>
-        <button onclick="cambiarMesa('M2')" class="table-btn px-2.5 py-1.5 rounded text-xs font-bold transition-all bg-gray-200 text-gray-700" data-table="M2">M2 (0)</button>
-        <button onclick="cambiarMesa('M3')" class="table-btn px-2.5 py-1.5 rounded text-xs font-bold transition-all bg-gray-200 text-gray-700" data-table="M3">M3 (0)</button>
-        <button onclick="cambiarMesa('M4')" class="table-btn px-2.5 py-1.5 rounded text-xs font-bold transition-all bg-gray-200 text-gray-700" data-table="M4">M4 (0)</button>
-        <button onclick="cambiarMesa('Llevar')" class="table-btn px-2.5 py-1.5 rounded text-xs font-bold transition-all bg-gray-800 text-white" data-table="Llevar">Llevar (0)</button>
-    </nav>
+        <div id="menu-list"></div>
+    </div>
 
-    <!-- Modal de Personalización / Resumen -->
-    <div id="modal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-200">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 id="modal-title" class="text-lg font-bold text-gray-800">Detalle del platillo</h3>
-                <button onclick="cerrarModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+    <div class="container" id="stats-view" style="display:none;">
+        <button class="btn-admin" style="background:#d9534f" onclick="toggleView()">⬅ Volver al Menú</button>
+        <h3>📊 Tablero de Ventas y QR</h3>
+        
+        <!-- Configuración de Seguridad por GPS -->
+        <div style="background: #e8f4fd; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #b6d4fe;">
+            <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #084298;">🛡️ Antibromas por GPS:</h4>
+            <p style="font-size: 0.75rem; color: #555; margin-bottom: 8px;">Registra la ubicación estando dentro del local:</p>
+            <button onclick="guardarUbicacionRestaurante()" style="background: #0d6efd; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">📍 Registrar mi ubicación actual aquí</button>
+            <p id="gpsStatusText" style="font-size: 0.75rem; color: #333; margin-top: 6px; font-weight: bold;"></p>
+        </div>
+
+        <!-- Generador de Códigos QR -->
+        <div style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #ddd;">
+            <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #333;">🖨️ Generador de QR por Mesa:</h4>
+            <p style="font-size: 0.75rem; color: #666; margin-bottom: 8px;">Pega tu enlace base de GitHub (ej: https://usuario.github.io/repo/):</p>
+            <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+                <input type="text" id="siteUrlInput" placeholder="https://tu-usuario.github.io/tu-repo/" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.8rem;">
+                <button onclick="guardarYGenerarQRs()" style="background: #333; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">Generar</button>
             </div>
+            <div id="allQrContainer" style="display: none; margin-top: 10px;"></div>
+        </div>
+
+        <div id="orders-history" style="margin-top:15px"></div>
+        <button class="btn-admin" style="background:#666; margin-top:20px" onclick="resetStats()">🗑️ Borrar Historial de Ventas</button>
+    </div>
+
+    <!-- Barra Inferior Múltiple (Menú General) -->
+    <div class="bottom-bar-multi" id="multiTableBar">
+        <button class="bottom-btn" onclick="abrirCart('Mesa 1')" id="btn-Mesa 1">M1 (0)</button>
+        <button class="bottom-btn" onclick="abrirCart('Mesa 2')" id="btn-Mesa 2">M2 (0)</button>
+        <button class="bottom-btn" onclick="abrirCart('Mesa 3')" id="btn-Mesa 3">M3 (0)</button>
+        <button class="bottom-btn" onclick="abrirCart('Mesa 4')" id="btn-Mesa 4">M4 (0)</button>
+        <button class="bottom-btn llevar" onclick="abrirCart('Para llevar')" id="btn-Para llevar">Llevar (0)</button>
+    </div>
+
+    <!-- Barra Flotante de Previsualización (Modo QR por Mesa) -->
+    <div class="bottom-bar-single" id="singleCartBar" onclick="abrirCart(activeTable)" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.4rem;">🛒</span>
+            <div>
+                <div style="font-size: 0.75rem; opacity: 0.9;" id="barTableName">Mi Pedido</div>
+                <div style="font-size: 0.95rem;" id="barItemsText">0 productos seleccionados</div>
+            </div>
+        </div>
+        <div style="font-size: 1.1rem; background: rgba(0,0,0,0.15); padding: 5px 10px; border-radius: 8px;" id="barTotalText">$0</div>
+    </div>
+
+    <!-- Modal de Personalización -->
+    <div class="modal" id="customModal">
+        <div class="modal-content">
+            <h3 id="modalItemName"></h3>
+            <p id="modalInstruction" style="font-size:0.8rem; color:#666; margin-top:5px;"></p>
             
-            <div id="modal-body" class="space-y-3">
-                <!-- Opciones dinámicas -->
+            <div id="sizeContainer" style="margin-top:10px; display:none;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#555;">Tamaño:</label>
+                <div id="sizeOptions" style="display:flex; gap:8px; margin-top:5px"></div>
             </div>
 
-            <div class="flex gap-3 pt-2">
-                <button onclick="cerrarModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2.5 rounded-xl transition">Cancelar</button>
-                <button id="modal-btn-confirmar" onclick="agregarAlCarritoConfirmar()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 rounded-xl shadow-md transition">Agregar</button>
+            <div id="meatContainer" style="margin-top:10px;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#555;">Opciones:</label>
+                <div id="meatOptions" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:5px"></div>
+            </div>
+
+            <div id="takeoutContainer" style="margin-top:15px; display:none;"><label style="font-weight:bold"><input type="checkbox" id="takeoutCheck"> Para llevar (+$5)</label></div>
+            <textarea id="itemNotes" style="width:100%; padding:10px; margin-top:10px; border:1px solid #ccc; border-radius:8px;" placeholder="Observaciones (ej. Sin lechuga)"></textarea>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button style="flex:1; padding:10px; border-radius:8px; border:none; background:#eee" onclick="document.getElementById('customModal').style.display='none'">Cancelar</button>
+                <button style="flex:1; padding:10px; border-radius:8px; border:none; background:#d9534f; color:white" onclick="agregarAlCarrito()">Agregar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal del Carrito / Enviar Pedido -->
-    <div id="cart-modal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4">
-            <h3 id="cart-modal-title" class="text-lg font-bold text-gray-800 border-b pb-2">Tu Pedido</h3>
-            <div id="cart-items-list" class="space-y-3 max-h-60 overflow-y-auto pr-1">
-                <!-- Items del carrito -->
-            </div>
-            <div class="border-t pt-3 flex justify-between items-center font-bold text-lg">
-                <span>Total:</span>
-                <span id="cart-modal-total" class="text-red-600">$0.00</span>
-            </div>
-            <div class="space-y-2 pt-2">
-                <button onclick="enviarWhatsApp()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-md transition flex items-center justify-center gap-2">
-                    Enviar por WhatsApp 📱
-                </button>
-                <button onclick="limpiarMesaActual()" class="w-full bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-2 rounded-xl text-sm transition">
-                    🗑️ Limpiar este pedido
-                </button>
-                <button onclick="cerrarCartModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium py-2 rounded-xl text-sm transition">
-                    Seguir comprando
-                </button>
-            </div>
+    <!-- Modal del Carrito / Pedido -->
+    <div class="modal" id="cartModal">
+        <div class="modal-content">
+            <h3 id="cartModalTitle">Pedido</h3>
+            <div id="cartItemsList" style="margin: 15px 0;"></div>
+            <div style="font-weight:bold; font-size:1.2rem; text-align:right; margin-bottom:20px;">Total: <span id="cartTotal">$0</span></div>
+            <button style="width:100%; padding:12px; background:#25d366; color:white; border:none; border-radius:8px; font-weight:bold; margin-bottom:10px" onclick="enviarWhatsAppValidado()">Enviar por WhatsApp 📲</button>
+            <button style="width:100%; padding:10px; background:#f44336; color:white; border:none; border-radius:8px;" onclick="limpiarCarritoActual()">🗑️ Limpiar este pedido</button>
+            <button style="width:100%; padding:10px; background:none; border:none; color:#666; margin-top:10px" onclick="document.getElementById('cartModal').style.display='none'">Seguir comprando</button>
         </div>
     </div>
 
-    <!-- Script de Lógica del Menú -->
     <script>
-        // Datos del menú
-        const menuItems = [
-            { id: 'pozole', name: 'Pozole', price: 80, desc: 'Desde $80', img: 'pozole.jpg', hasOptions: true },
-            { id: 'pancita', name: 'Pancita', price: 80, desc: 'Desde $80', img: 'pancita.jpg', hasOptions: true },
-            { id: 'flautas', name: 'Flautas', price: 75, desc: '$75.00', img: 'flautas.jpg', hasOptions: false },
-            { id: 'pambazo', name: 'Pambazo', price: 35, desc: '$35.00', img: 'pambazo.jpg', hasOptions: true },
-            { id: 'tostada', name: 'Tostada', price: 30, desc: '$30.00', img: 'tostada.jpg', hasOptions: false }
+        const PIN_ADMIN = "1234"; 
+        let tapCounter = 0;
+        let tapTimer = null;
+        let isQrMode = false;
+
+        function handleHeaderTap() {
+            tapCounter++;
+            clearTimeout(tapTimer);
+            tapTimer = setTimeout(() => { tapCounter = 0; }, 1000);
+            if (tapCounter >= 5) {
+                tapCounter = 0;
+                pedirPinYEntrar();
+            }
+        }
+
+        const menu = [
+            { id: 1, name: "Pozole", category: "Pozoles y Caldos", sizes: [{name: "Chica", price: 80}, {name: "Grande", price: 100}], options: ["Pollo", "Maciza", "Cabeza", "Surtida"], img: "pozole.jpg", hasTakeout: true, isMulti: false },
+            { id: 2, name: "Pancita", category: "Pozoles y Caldos", sizes: [{name: "Chica", price: 80}, {name: "Grande", price: 100}], options: [], img: "pancita.jpg", hasTakeout: true, isMulti: false },
+            { id: 3, name: "Flautas", category: "Antojitos", price: 75, options: ["Pollo", "Carne"], img: "flautas.jpg", hasTakeout: false, isMulti: false },
+            { id: 4, name: "Gordita", category: "Antojitos", price: 35, options: ["Chicharrón", "Pollo", "Carne", "Quesillo"], img: "gordita.jpg", hasTakeout: false, isMulti: true },
+            { id: 5, name: "Quesadilla", category: "Antojitos", price: 30, options: ["Quesillo", "Carne", "Chicharrón", "Hongos", "Flor", "Pollo"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
+            { id: 6, name: "Pambazo", category: "Antojitos", price: 35, options: ["Sin papa", "Papa con chorizo", "Pollo", "Carne", "Quesillo"], img: "pambazo.jpg", hasTakeout: false, isMulti: true },
+            { id: 7, name: "Tostada", category: "Antojitos", price: 30, options: ["Pollo", "Res", "Pata"], img: "tostada.jpg", hasTakeout: false, isMulti: false },
+            { id: 8, name: "Agua de Jamaica", category: "Bebidas", price: 40, options: ["Litro ($40)", "Medio litro ($20)"], img: "jamaica.jpg", hasTakeout: false, isMulti: false },
+            { id: 9, name: "Coca-Cola", category: "Bebidas", price: 30, options: [], img: "cocacola.jpg", hasTakeout: false, isMulti: false },
+            { id: 10, name: "Jarritos", category: "Bebidas", price: 30, options: ["Piña", "Mandarina", "Limón", "Uva", "Tamarindo", "Tutifruti"], img: "jarritos.jpg", hasTakeout: false, isMulti: false },
+            { id: 11, name: "Boing", category: "Bebidas", price: 30, options: ["Mango", "Manzana", "Guayaba"], img: "boing.jpg", hasTakeout: false, isMulti: false },
+            { id: 12, name: "Café", category: "Bebidas", price: 20, options: [], img: "cafe.jpg", hasTakeout: false, isMulti: false }
         ];
 
-        let mesaActual = 'M1';
-        let pedidos = { 'M1': [], 'M2': [], 'M3': [], 'M4': [], 'Llevar': [] };
-        let itemSeleccionado = null;
+        let carts = JSON.parse(localStorage.getItem('cartsData')) || { "Mesa 1": {}, "Mesa 2": {}, "Mesa 3": {}, "Mesa 4": {}, "Para llevar": {} };
+        let activeTable = "Mesa 1";
+        let currentCartLocation = "Mesa 1";
+        let selectedSize = null;
+        let selectedOptions = []; 
+        let currentItem = null;
 
-        function renderMenu() {
-            const container = document.getElementById('menu-container');
-            container.innerHTML = '';
-
-            menuItems.forEach(item => {
-                container.innerHTML += `
-                    <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex items-center justify-between gap-3">
-                        <img src="${item.img}" alt="${item.name}" class="w-20 h-20 object-cover rounded-xl shadow-inner" onerror="this.src='https://via.placeholder.com/80'">
-                        <div class="flex-1">
-                            <h2 class="font-bold text-gray-800 text-base">${item.name}</h2>
-                            <p class="text-sm text-gray-500 font-medium">${item.desc}</p>
-                        </div>
-                        <button onclick="abrirOpciones('${item.id}')" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-xl shadow transition text-sm">
-                            Agregar
-                        </button>
-                    </div>
-                `;
-            });
-            actualizarBotonesMesas();
+        function saveCarts() {
+            localStorage.setItem('cartsData', JSON.stringify(carts));
         }
 
-        function cambiarMesa(mesa) {
-            mesaActual = mesa;
-            document.getElementById('table-indicator').innerText = `Estás ordenando desde: ${mesa === 'Llevar' ? 'Para Llevar' : 'Mesa ' + mesa.replace('M','')}`;
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            let mesaParam = urlParams.get('mesa');
+            if (mesaParam) {
+                isQrMode = true;
+                activeTable = decodeURIComponent(mesaParam);
+                document.getElementById('tableIndicatorText').innerText = `📍 Estás ordenando desde: ${activeTable}`;
+                document.getElementById('tableTabsContainer').style.display = 'none';
+                document.getElementById('multiTableBar').style.display = 'none';
+                document.getElementById('singleCartBar').style.display = 'flex';
+                document.getElementById('barTableName').innerText = `Pedido de ${activeTable}`;
+            } else {
+                isQrMode = false;
+                document.getElementById('tableIndicatorText').innerText = `🍽️ Menú General (Mesa seleccionada: ${activeTable})`;
+                document.getElementById('multiTableBar').style.display = 'grid';
+                document.getElementById('singleCartBar').style.display = 'none';
+            }
+            updateBottomButtons();
+        });
+
+        function setActiveTable(table) {
+            activeTable = table;
+            document.querySelectorAll('.table-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.innerText.includes(table));
+            });
+            document.getElementById('tableIndicatorText').innerText = `🍽️ Menú General (Mesa seleccionada: ${activeTable})`;
+        }
+
+        function abrirModal(id) {
+            currentItem = menu.find(m => m.id === id);
+            selectedOptions = [];
+            document.getElementById('modalItemName').innerText = `${currentItem.name} (${activeTable})`;
             
-            document.querySelectorAll('.table-btn').forEach(btn => {
-                if(btn.dataset.table === mesa) {
-                    btn.className = "table-btn px-2.5 py-1.5 rounded text-xs font-bold transition-all bg-red-700 text-white shadow";
+            // Instrucción dinámica según el platillo
+            if (currentItem.isMulti) {
+                if (currentItem.name === "Pambazo") {
+                    document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (cada ingrediente extra cuesta $10)";
                 } else {
-                    btn.className = "table-btn px-2.5 py-1.5 rounded text-xs font-bold transition-all bg-gray-200 text-gray-700";
+                    document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (cada ingrediente extra cuesta $5)";
                 }
-            });
-
-            if(pedidos[mesaActual].length > 0) {
-                abrirCartModal();
+            } else {
+                document.getElementById('modalInstruction').innerText = "";
             }
-        }
 
-        function abrirOpciones(id) {
-            itemSeleccionado = menuItems.find(i => i.id === id);
-            const modalBody = document.getElementById('modal-body');
-            const modalTitle = document.getElementById('modal-title');
+            document.getElementById('itemNotes').value = "";
+            document.getElementById('takeoutCheck').checked = false;
+            document.getElementById('takeoutContainer').style.display = currentItem.hasTakeout ? 'block' : 'none';
             
-            modalTitle.innerText = `${itemSeleccionado.name} (${mesaActual === 'Llevar' ? 'Para Llevar' : 'Mesa ' + mesaActual.replace('M','')})`;
-            modalBody.innerHTML = '';
-
-            if (id === 'pambazo') {
-                modalBody.innerHTML = `
-                    <p class="text-xs text-gray-500">Selecciona hasta 2 opciones (cada ingrediente extra cuesta $10)</p>
-                    <div class="space-y-2 max-h-48 overflow-y-auto">
-                        <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border"><input type="checkbox" name="pambazo-op" value="Sin papa" class="pambazo-option w-4 h-4 text-red-600"> Sin papa</label>
-                        <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border"><input type="checkbox" name="pambazo-op" value="Papa con chorizo" checked class="pambazo-option w-4 h-4 text-red-600"> Papa con chorizo</label>
-                        <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border"><input type="checkbox" name="pambazo-op" value="Pollo" class="pambazo-option w-4 h-4 text-red-600"> Pollo</label>
-                        <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border"><input type="checkbox" name="pambazo-op" value="Carne" class="pambazo-option w-4 h-4 text-red-600"> Carne</label>
-                        <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border"><input type="checkbox" name="pambazo-op" value="Quesillo" class="pambazo-option w-4 h-4 text-red-600"> Quesillo</label>
-                    </div>
-                    <div class="mt-3">
-                        <label class="text-xs font-semibold text-gray-600">Observaciones:</label>
-                        <input type="text" id="obs-input" placeholder="Ej. Sin lechuga" class="w-full mt-1 border rounded-xl p-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
-                    </div>
-                `;
-            } else if (id === 'pozole' || id === 'pancita') {
-                modalBody.innerHTML = `
-                    <div class="space-y-2">
-                        <label class="text-xs font-semibold text-gray-600">Tipo de carne / porción:</label>
-                        <select id="select-extra" class="w-full border rounded-xl p-2.5 text-sm bg-white focus:ring-2 focus:ring-red-500">
-                            <option value="Surtida">Surtida ($80)</option>
-                            <option value="Cabeza">Cabeza ($80)</option>
-                            <option value="Maciza">Maciza ($80)</option>
-                        </select>
-                    </div>
-                    <div class="mt-3">
-                        <label class="text-xs font-semibold text-gray-600">Observaciones:</label>
-                        <input type="text" id="obs-input" placeholder="Ej. Bien caliente, sin cebolla" class="w-full mt-1 border rounded-xl p-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
-                    </div>
-                `;
+            const sizeContainer = document.getElementById('sizeContainer');
+            const sizeOptionsDiv = document.getElementById('sizeOptions');
+            if (currentItem.sizes) {
+                sizeContainer.style.display = "block";
+                selectedSize = currentItem.sizes[1]; 
+                sizeOptionsDiv.innerHTML = currentItem.sizes.map(s => `
+                    <div class="option-pill ${s.name === selectedSize.name ? 'active' : ''}" onclick="selectSize('${s.name}', ${s.price}, this)">${s.name} ($${s.price})</div>`).join('');
             } else {
-                modalBody.innerHTML = `
-                    <div>
-                        <label class="text-xs font-semibold text-gray-600">Observaciones:</label>
-                        <input type="text" id="obs-input" placeholder="Ej. Con crema extra" class="w-full mt-1 border rounded-xl p-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500">
-                    </div>
-                `;
+                sizeContainer.style.display = "none";
+                selectedSize = null;
             }
 
-            document.getElementById('modal').classList.remove('hidden');
+            renderOptions();
+            document.getElementById('customModal').style.display = 'flex';
         }
 
-        function cerrarModal() {
-            document.getElementById('modal').classList.add('hidden');
+        function selectSize(name, price, el) {
+            selectedSize = { name, price };
+            document.querySelectorAll('#sizeOptions .option-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
         }
 
-        function agregarAlCarritoConfirmar() {
-            let precioFinal = itemSeleccionado.price;
-            let detalles = '';
-            let obs = document.getElementById('obs-input') ? document.getElementById('obs-input').value : '';
+        function renderOptions() {
+            const container = document.getElementById('meatOptions');
+            const meatContainer = document.getElementById('meatContainer');
+            if (currentItem.options.length > 0) {
+                meatContainer.style.display = "block";
+                container.style.display = "flex";
+                container.innerHTML = currentItem.options.map(opt => `
+                    <div class="option-pill" onclick="toggleOption('${opt}', this)">${opt}</div>`).join('');
+            } else { 
+                meatContainer.style.display = "none";
+                container.style.display = "none"; 
+            }
+        }
 
-            if (itemSeleccionado.id === 'pambazo') {
-                let checkboxes = document.querySelectorAll('.pambazo-option:checked');
-                let seleccionados = Array.from(checkboxes).map(cb => cb.value);
-                
-                if (seleccionados.length === 0) {
-                    alert('Por favor selecciona al menos una opción para el pambazo.');
-                    return;
+        function toggleOption(opt, el) {
+            if (currentItem.isMulti) {
+                if (selectedOptions.includes(opt)) {
+                    selectedOptions = selectedOptions.filter(o => o !== opt);
+                    el.classList.remove('active');
+                } else if (selectedOptions.length < 2) {
+                    selectedOptions.push(opt);
+                    el.classList.add('active');
                 }
-                
-                detalles = seleccionados.join(' + ');
-                
-                // Base $35 + $10 por cada ingrediente extra a partir del segundo
-                let extrasCount = Math.max(0, seleccionados.length - 1);
-                precioFinal = 35 + (extrasCount * 10);
-
-            } else if (itemSeleccionado.id === 'pozole' || itemSeleccionado.id === 'pancita') {
-                let select = document.getElementById('select-extra');
-                detalles = select ? select.value : '';
-            }
-
-            if (obs.trim() !== '') {
-                detalles += (detalles ? ' | ' : '') + `Nota: ${obs}`;
-            }
-
-            let existente = pedidos[mesaActual].find(p => p.id === itemSeleccionado.id && p.detalles === detalles);
-            if (existente) {
-                existente.cantidad += 1;
             } else {
-                pedidos[mesaActual].push({
-                    id: itemSeleccionado.id,
-                    name: itemSeleccionado.name,
-                    precioUnitario: precioFinal,
-                    detalles: detalles,
-                    cantidad: 1
+                selectedOptions = [opt];
+                document.querySelectorAll('#meatOptions .option-pill').forEach(p => p.classList.remove('active'));
+                el.classList.add('active');
+            }
+        }
+
+        function agregarAlCarrito() {
+            let price = selectedSize ? selectedSize.price : currentItem.price;
+            let finalName = currentItem.name;
+            if (selectedSize) finalName += ` (${selectedSize.name})`;
+            let takeout = document.getElementById('takeoutCheck').checked;
+            
+            if (currentItem.name === "Agua de Jamaica" && selectedOptions.includes("Medio litro ($20)")) price = 20;
+            
+            if (currentItem.isMulti) {
+                if (currentItem.name === "Pambazo") {
+                    // Base $35 incluye 1 opción. Cada ingrediente extra a partir del segundo suma $10.
+                    if (selectedOptions.length > 1) {
+                        price = currentItem.price + (selectedOptions.length - 1) * 10;
+                    } else {
+                        price = currentItem.price;
+                    }
+                } else {
+                    selectedOptions.forEach(opt => {
+                        price += 5;
+                    });
+                }
+            }
+
+            if (takeout) { price += 5; finalName += " (Llevar)"; }
+            
+            const notes = document.getElementById('itemNotes').value;
+            const key = currentItem.id + (selectedSize ? selectedSize.name : '') + selectedOptions.join(',') + takeout + notes;
+            
+            if (!carts[activeTable]) carts[activeTable] = {};
+            carts[activeTable][key] = { 
+                name: finalName, 
+                category: currentItem.category,
+                price: price, 
+                options: selectedOptions, 
+                notes: notes, 
+                qty: (carts[activeTable][key]?.qty || 0) + 1 
+            };
+
+            saveCarts();
+            document.getElementById('customModal').style.display = 'none';
+            updateBottomButtons();
+        }
+
+        function updateBottomButtons() {
+            if (isQrMode) {
+                let currentCart = carts[activeTable] || {};
+                let count = Object.values(currentCart).reduce((s, i) => s + i.qty, 0);
+                let total = Object.values(currentCart).reduce((s, i) => s + (i.price * i.qty), 0);
+                
+                document.getElementById('barItemsText').innerText = count === 1 ? '1 producto seleccionado' : `${count} productos seleccionados`;
+                document.getElementById('barTotalText').innerText = `$${total}`;
+            } else {
+                const tables = ["Mesa 1", "Mesa 2", "Mesa 3", "Mesa 4", "Para llevar"];
+                tables.forEach(t => {
+                    let count = Object.values(carts[t] || {}).reduce((s, i) => s + i.qty, 0);
+                    let btnId = t === "Para llevar" ? "btn-Para llevar" : `btn-${t}`;
+                    let label = t === "Para llevar" ? "Llevar" : t.replace("Mesa ", "M");
+                    document.getElementById(btnId).innerText = `${label} (${count})`;
                 });
             }
-
-            cerrarModal();
-            actualizarBotonesMesas();
-            abrirCartModal();
         }
 
-        function actualizarBotonesMesas() {
-            for (let m in pedidos) {
-                let totalItems = pedidos[m].reduce((sum, item) => sum + item.cantidad, 0);
-                let btn = document.querySelector(`.table-btn[data-table="${m}"]`);
-                if(btn) {
-                    let nombreMesa = m === 'Llevar' ? 'Llevar' : m;
-                    btn.innerText = `${nombreMesa} (${totalItems})`;
-                }
-            }
-        }
-
-        function abrirCartModal() {
-            const listContainer = document.getElementById('cart-items-list');
-            const cartTotalElem = document.getElementById('cart-modal-total');
-            const cartTitle = document.getElementById('cart-modal-title');
-            
-            cartTitle.innerText = `Pedido de ${mesaActual === 'Llevar' ? 'Para Llevar' : 'Mesa ' + mesaActual.replace('M','')}`;
-            listContainer.innerHTML = '';
-
-            let currentCart = pedidos[mesaActual];
-            if (currentCart.length === 0) {
-                listContainer.innerHTML = `<p class="text-center text-gray-400 py-4 text-sm">No hay platillos en este pedido.</p>`;
-                cartTotalElem.innerText = '$0.00';
-                document.getElementById('cart-modal').classList.remove('hidden');
-                return;
-            }
-
-            let totalGeneral = 0;
-            currentCart.forEach((item, index) => {
-                let subtotal = item.precioUnitario * item.cantidad;
-                totalGeneral += subtotal;
-                listContainer.innerHTML += `
-                    <div class="flex justify-between items-center border-b pb-2 text-sm">
-                        <div>
-                            <p class="font-bold text-gray-800">${item.name} <span class="text-xs text-gray-500 font-normal">($${item.precioUnitario})</span></p>
-                            <p class="text-xs text-gray-500">${item.detalles}</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="cambiarCantidad(${index}, -1)" class="bg-gray-200 px-2 py-0.5 rounded font-bold text-xs">-</button>
-                            <span class="font-bold text-sm">${item.cantidad}</span>
-                            <button onclick="cambiarCantidad(${index}, 1)" class="bg-gray-200 px-2 py-0.5 rounded font-bold text-xs">+</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            cartTotalElem.innerText = `$${totalGeneral.toFixed(2)}`;
-            document.getElementById('cart-modal').classList.remove('hidden');
-        }
-
-        function cambiarCantidad(index, delta) {
-            let currentCart = pedidos[mesaActual];
-            currentCart[index].cantidad += delta;
-            if (currentCart[index].cantidad <= 0) {
-                currentCart.splice(index, 1);
-            }
-            actualizarBotonesMesas();
-            abrirCartModal();
-        }
-
-        function cerrarCartModal() {
-            document.getElementById('cart-modal').classList.add('hidden');
-        }
-
-        function limpiarMesaActual() {
-            if (confirm('¿Deseas limpiar todos los platillos de esta mesa?')) {
-                pedidos[mesaActual] = [];
-                actualizarBotonesMesas();
-                cerrarCartModal();
-            }
-        }
-
-        function enviarWhatsApp() {
-            let currentCart = pedidos[mesaActual];
-            if (currentCart.length === 0) {
-                alert('No hay productos en el pedido.');
-                return;
-            }
-
-            let texto = `*NUEVO PEDIDO - POZOLES LAS TÍAS*\n`;
-            texto += `📍 *Ubicación:* ${mesaActual === 'Llevar' ? 'Para Llevar' : 'Mesa ' + mesaActual.replace('M','')}\n\n`;
-            
+        function abrirCart(location) {
+            currentCartLocation = location;
+            document.getElementById('cartModalTitle').innerText = `Pedido de ${location}`;
+            let list = document.getElementById('cartItemsList');
             let total = 0;
-            currentCart.forEach(item => {
-                let sub = item.precioUnitario * item.cantidad;
-                total += sub;
-                texto += `▪️ ${item.cantidad}x ${item.name}`;
-                if(item.detalles) texto += ` (${item.detalles})`;
-                texto += ` - $${sub}\n`;
-            });
+            let currentCart = carts[location] || {};
 
-            texto += `\n💰 *TOTAL A PAGAR: $${total.toFixed(2)}*`;
+            list.innerHTML = Object.keys(currentCart).map(k => {
+                total += currentCart[k].price * currentCart[k].qty;
+                return `
+                <div class="cart-row">
+                    <div><b>${currentCart[k].name}</b><br><small>${currentCart[k].options.join(' + ') || ''} ${currentCart[k].notes || ''}</small></div>
+                    <div style="display:flex; align-items:center; gap:5px">
+                        <button class="qty-btn" onclick="ajustarQty('${location}', '${k}', -1)">-</button>
+                        <span>${currentCart[k].qty}</span>
+                        <button class="qty-btn" onclick="ajustarQty('${location}', '${k}', 1)">+</button>
+                    </div>
+                </div>`;
+            }).join('') || '<p style="text-align:center; color:#777;">Sin productos en este pedido</p>';
 
-            let numeroNegocio = "525500000000"; 
-            let url = `https://wa.me/${numeroNegocio}?text=${encodeURIComponent(texto)}`;
-            
-            window.open(url, '_blank');
+            document.getElementById('cartTotal').innerText = '$' + total;
+            document.getElementById('cartModal').style.display = 'flex';
         }
 
-        window.onload = renderMenu;
+        function ajustarQty(location, key, delta) {
+            if (!carts[location][key]) return;
+            carts[location][key].qty += delta;
+            if(carts[location][key].qty <= 0) delete carts[location][key];
+            saveCarts();
+            updateBottomButtons();
+            abrirCart(location);
+        }
+
+        function limpiarCarritoActual() {
+            if(confirm(`¿Limpiar el pedido de ${currentCartLocation}?`)) {
+                carts[currentCartLocation] = {};
+                saveCarts();
+                updateBottomButtons();
+                abrirCart(currentCartLocation);
+            }
+        }
+
+        function enviarWhatsAppValidado() {
+            let currentCart = carts[currentCartLocation] || {};
+            if(Object.keys(currentCart).length === 0) return alert("Este pedido está vacío");
+
+            let restLat = localStorage.getItem('restLat');
+            let restLon = localStorage.getItem('restLon');
+
+            if (!restLat || !restLon) {
+                ejecutarEnvioWhatsApp();
+                return;
+            }
+
+            if (!navigator.geolocation) {
+                alert("Tu navegador no soporta geolocalización.");
+                return;
+            }
+
+            alert("Verificando que te encuentres en el restaurante...");
+
+            navigator.geolocation.getCurrentPosition(position => {
+                let userLat = position.coords.latitude;
+                let userLon = position.coords.longitude;
+                let distancia = calcularDistancia(parseFloat(restLat), parseFloat(restLon), userLat, userLon);
+
+                if (distancia > 150) {
+                    alert("Lo sentimos, estás fuera del restaurante (" + Math.round(distancia) + " mts). Este menú solo permite enviar pedidos estando en el establecimiento.");
+                    return;
+                }
+
+                ejecutarEnvioWhatsApp();
+            }, error => {
+                alert("Por favor permite el acceso a tu ubicación GPS para confirmar que estás en el restaurante y enviar tu pedido.");
+            }, { timeout: 10000, enableHighAccuracy: true });
+        }
+
+        function calcularDistancia(lat1, lon1, lat2, lon2) {
+            let R = 6371e3;
+            let dLat = (lat2 - lat1) * Math.PI / 180;
+            let dLon = (lon2 - lon1) * Math.PI / 180;
+            let a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+            let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function ejecutarEnvioWhatsApp() {
+            let currentCart = carts[currentCartLocation] || {};
+            let total = 0, msg = `Pedido: ${currentCartLocation}%0A`;
+            let itemsArray = [];
+            
+            for(let k in currentCart) { 
+                msg += `• ${currentCart[k].qty}x ${currentCart[k].name} ${currentCart[k].options.length > 0 ? `(${currentCart[k].options.join(' + ')})` : ''} ${currentCart[k].notes ? `[${currentCart[k].notes}]` : ''}%0A`;
+                total += currentCart[k].price * currentCart[k].qty;
+                itemsArray.push({
+                    name: currentCart[k].name,
+                    category: currentCart[k].category || "Otros",
+                    price: currentCart[k].price,
+                    qty: currentCart[k].qty
+                });
+            }
+            msg += `%0ATotal: $${total}`;
+            
+            let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders.push({ loc: currentCartLocation, total: total, items: itemsArray, time: new Date().toLocaleTimeString() });
+            localStorage.setItem('orders', JSON.stringify(orders));
+            
+            carts[currentCartLocation] = {};
+            saveCarts();
+            updateBottomButtons();
+            document.getElementById('cartModal').style.display = 'none';
+            
+            window.open(`https://wa.me/5215549354467?text=${msg}`, '_blank');
+        }
+
+        function guardarUbicacionRestaurante() {
+            if (!navigator.geolocation) return alert("Tu dispositivo no soporta GPS.");
+            navigator.geolocation.getCurrentPosition(position => {
+                localStorage.setItem('restLat', position.coords.latitude);
+                localStorage.setItem('restLon', position.coords.longitude);
+                document.getElementById('gpsStatusText').innerText = "✅ Ubicación registrada correctamente (Lat: " + position.coords.latitude.toFixed(4) + ", Lon: " + position.coords.longitude.toFixed(4) + ")";
+                alert("¡Ubicación del restaurante guardada con éxito!");
+            }, error => {
+                alert("Error al obtener la ubicación. Asegúrate de activar el GPS.");
+            }, { enableHighAccuracy: true });
+        }
+
+        function pedirPinYEntrar() {
+            let ingreso = prompt("Ingresa el PIN de administrador:");
+            if (ingreso === PIN_ADMIN) {
+                toggleView();
+            } else if (ingreso !== null) {
+                alert("PIN incorrecto.");
+            }
+        }
+
+        function toggleView() {
+            const main = document.getElementById('main-view'), stats = document.getElementById('stats-view');
+            main.style.display = (main.style.display === 'none') ? 'block' : 'none';
+            stats.style.display = (stats.style.display === 'none') ? 'block' : 'none';
+            if(stats.style.display === 'block') {
+                loadStats();
+                cargarConfigGuardada();
+            }
+        }
+
+        function guardarYGenerarQRs() {
+            let url = document.getElementById('siteUrlInput').value.trim();
+            if(!url) return alert("Por favor ingresa un enlace válido");
+            if(!url.endsWith('/')) url += '/';
+            localStorage.setItem('siteUrl', url);
+            mostrarTodosLosQRs(url);
+            alert("¡Enlaces y QRs generados con éxito!");
+        }
+
+        function cargarConfigGuardada() {
+            let savedUrl = localStorage.getItem('siteUrl');
+            if(savedUrl) {
+                document.getElementById('siteUrlInput').value = savedUrl;
+                mostrarTodosLosQRs(savedUrl);
+            }
+            let restLat = localStorage.getItem('restLat');
+            if(restLat) {
+                document.getElementById('gpsStatusText').innerText = "✅ Ubicación del restaurante activa configurada.";
+            } else {
+                document.getElementById('gpsStatusText').innerText = "⚠️ Aún no registras la ubicación. Presiona el botón estando en el local.";
+            }
+        }
+
+        function mostrarTodosLosQRs(baseUrl) {
+            let container = document.getElementById('allQrContainer');
+            let mesas = ["Mesa 1", "Mesa 2", "Mesa 3", "Mesa 4", "Para llevar"];
+            
+            container.innerHTML = mesas.map(m => {
+                let fullUrl = `${baseUrl}?mesa=${encodeURIComponent(m)}`;
+                let qrImg = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(fullUrl)}`;
+                return `
+                <div class="qr-card">
+                    <b>🪑 ${m}</b><br>
+                    <img src="${qrImg}" style="width: 120px; height: 120px; margin-top: 5px; border-radius: 4px;"><br>
+                    <input type="text" value="${fullUrl}" readonly style="width: 100%; font-size: 0.7rem; padding: 4px; margin-top: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px;" onclick="this.select()">
+                </div>`;
+            }).join('');
+            
+            container.style.display = 'block';
+        }
+
+        function loadStats() {
+            let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            let totalGeneral = orders.reduce((sum, o) => sum + o.total, 0);
+            let categoryTotals = {};
+            let articleTotals = {};
+
+            orders.forEach(o => {
+                if(o.items) {
+                    o.items.forEach(item => {
+                        let cat = item.category || "Otros";
+                        categoryTotals[cat] = (categoryTotals[cat] || 0) + (item.price * item.qty);
+                        let artName = item.name;
+                        if(!articleTotals[artName]) articleTotals[artName] = { qty: 0, total: 0 };
+                        articleTotals[artName].qty += item.qty;
+                        articleTotals[artName].total += (item.price * item.qty);
+                    });
+                }
+            });
+
+            let categoryHTML = Object.keys(categoryTotals).map(cat => `
+                <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.9rem;">
+                    <span>📂 ${cat}</span>
+                    <b>$${categoryTotals[cat]}</b>
+                </div>
+            `).join('') || '<p style="color:#777; font-size:0.85rem; text-align:center;">No hay ventas registradas aún.</p>';
+
+            let articleHTML = Object.keys(articleTotals).map(art => `
+                <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.85rem;">
+                    <span>🍲 ${art} (<b>${articleTotals[art].qty} pzas</b>)</span>
+                    <b>$${articleTotals[art].total}</b>
+                </div>
+            `).join('') || '<p style="color:#777; font-size:0.85rem; text-align:center;">No hay ventas registradas aún.</p>';
+
+            document.getElementById('orders-history').innerHTML = `
+                <div style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #d9534f;">
+                    <span style="font-size:0.85rem; color:#555;">Total General del Día:</span><br>
+                    <b style="font-size: 1.3rem; color: #d9534f;">$${totalGeneral}</b>
+                </div>
+                
+                <h4 style="margin-bottom: 8px; font-size: 0.95rem; color: #333;">📋 Ventas por Categoría:</h4>
+                <div style="background: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
+                    ${categoryHTML}
+                </div>
+
+                <h4 style="margin-bottom: 8px; font-size: 0.95rem; color: #333;">📦 Ventas por Artículo (Desglose):</h4>
+                <div style="background: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
+                    ${articleHTML}
+                </div>
+
+                <h4 style="margin-bottom: 8px; font-size: 0.95rem; color: #333;">🕒 Historial de Pedidos:</h4>
+                ` + orders.map(o => `<div style="padding: 6px 0; border-bottom: 1px dashed #eee; font-size: 0.85rem; color:#444;">${o.time} - <b>${o.loc}</b> - $${o.total}</div>`).join('');
+        }
+
+        function resetStats() { 
+            if(confirm("¿Seguro que deseas borrar el historial de ventas?")) { 
+                localStorage.removeItem('orders'); 
+                loadStats(); 
+            } 
+        }
+
+        document.getElementById('menu-list').innerHTML = menu.map(item => `
+            <div class="menu-item" onclick="abrirModal(${item.id})">
+                <div style="display:flex; align-items:center; gap:10px">
+                    <img src="${item.img}" class="menu-img">
+                    <div>
+                        <h3>${item.name}</h3>
+                        <p>${item.sizes ? 'Desde $' + item.sizes[0].price : '$' + item.price + '.00'}</p>
+                    </div>
+                </div>
+                <button class="add-btn">Agregar</button>
+            </div>`).join('');
+
+        updateBottomButtons();
     </script>
 </body>
 </html>
