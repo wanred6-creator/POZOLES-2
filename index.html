@@ -223,9 +223,9 @@
             // Instrucción dinámica según el platillo
             if (currentItem.isMulti) {
                 if (currentItem.name === "Pambazo") {
-                    document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (cada ingrediente extra cuesta $10)";
+                    document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (el precio base incluye 1, cada ingrediente extra cuesta $10)";
                 } else {
-                    document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (cada ingrediente extra cuesta $5)";
+                    document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (el precio base incluye 1, cada ingrediente extra cuesta $5)";
                 }
             } else {
                 document.getElementById('modalInstruction').innerText = "";
@@ -297,16 +297,19 @@
             
             if (currentItem.isMulti) {
                 if (currentItem.name === "Pambazo") {
-                    // Base $35 incluye 1 opción. Cada ingrediente extra a partir del segundo suma $10.
+                    // Base incluye 1 opción. Cada ingrediente extra a partir del segundo suma $10.
                     if (selectedOptions.length > 1) {
                         price = currentItem.price + (selectedOptions.length - 1) * 10;
                     } else {
                         price = currentItem.price;
                     }
                 } else {
-                    selectedOptions.forEach(opt => {
-                        price += 5;
-                    });
+                    // Base incluye 1 opción (ej. chicharrón en gordita). Cada ingrediente extra a partir del segundo suma $5.
+                    if (selectedOptions.length > 1) {
+                        price = currentItem.price + (selectedOptions.length - 1) * 5;
+                    } else {
+                        price = currentItem.price;
+                    }
                 }
             }
 
