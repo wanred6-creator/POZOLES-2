@@ -87,11 +87,9 @@
         ];
 
         let mesaActual = 'M1';
-        // Estructura de pedidos por mesa
         let pedidos = { 'M1': [], 'M2': [], 'M3': [], 'M4': [], 'Llevar': [] };
         let itemSeleccionado = null;
 
-        // Inicializar la vista
         function renderMenu() {
             const container = document.getElementById('menu-container');
             container.innerHTML = '';
@@ -117,7 +115,6 @@
             mesaActual = mesa;
             document.getElementById('table-indicator').innerText = `Estás ordenando desde: ${mesa === 'Llevar' ? 'Para Llevar' : 'Mesa ' + mesa.replace('M','')}`;
             
-            // Actualizar diseño de botones inferiores
             document.querySelectorAll('.table-btn').forEach(btn => {
                 if(btn.dataset.table === mesa) {
                     btn.className = "table-btn px-2.5 py-1.5 rounded text-xs font-bold transition-all bg-red-700 text-white shadow";
@@ -126,7 +123,6 @@
                 }
             });
 
-            // Si ya hay elementos en esta mesa, abrir el resumen del carrito de inmediato al tocar la barra
             if(pedidos[mesaActual].length > 0) {
                 abrirCartModal();
             }
@@ -142,7 +138,7 @@
 
             if (id === 'pambazo') {
                 modalBody.innerHTML = `
-                    <p class="text-xs text-gray-500">Selecciona hasta 2 opciones (cada ingrediente extra cuesta $5)</p>
+                    <p class="text-xs text-gray-500">Selecciona hasta 2 opciones (cada ingrediente extra cuesta $10)</p>
                     <div class="space-y-2 max-h-48 overflow-y-auto">
                         <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border"><input type="checkbox" name="pambazo-op" value="Sin papa" class="pambazo-option w-4 h-4 text-red-600"> Sin papa</label>
                         <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 cursor-pointer border"><input type="checkbox" name="pambazo-op" value="Papa con chorizo" checked class="pambazo-option w-4 h-4 text-red-600"> Papa con chorizo</label>
@@ -202,10 +198,9 @@
                 
                 detalles = seleccionados.join(' + ');
                 
-                // CORRECCIÓN CLAVE DE PRECIO:
-                // El precio base ($35) incluye la 1ra opción. Cada opción extra suma $5.
+                // Base $35 + $10 por cada ingrediente extra a partir del segundo
                 let extrasCount = Math.max(0, seleccionados.length - 1);
-                precioFinal = 35 + (extrasCount * 5);
+                precioFinal = 35 + (extrasCount * 10);
 
             } else if (itemSeleccionado.id === 'pozole' || itemSeleccionado.id === 'pancita') {
                 let select = document.getElementById('select-extra');
@@ -216,7 +211,6 @@
                 detalles += (detalles ? ' | ' : '') + `Nota: ${obs}`;
             }
 
-            // Buscar si ya existe un ítem idéntico en el carrito de esta mesa
             let existente = pedidos[mesaActual].find(p => p.id === itemSeleccionado.id && p.detalles === detalles);
             if (existente) {
                 existente.cantidad += 1;
@@ -328,14 +322,12 @@
 
             texto += `\n💰 *TOTAL A PAGAR: $${total.toFixed(2)}*`;
 
-            // Número de WhatsApp del negocio (reemplaza con tu número a 10 dígitos con código de país 52)
             let numeroNegocio = "525500000000"; 
             let url = `https://wa.me/${numeroNegocio}?text=${encodeURIComponent(texto)}`;
             
             window.open(url, '_blank');
         }
 
-        // Cargar menú al iniciar
         window.onload = renderMenu;
     </script>
 </body>
