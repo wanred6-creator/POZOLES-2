@@ -8,8 +8,11 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-image: url('negocio.jpg'); background-size: cover; background-position: center; background-attachment: fixed; padding-bottom: 110px; }
-        header { background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('negocio.jpg'); background-size: cover; background-position: center; color: white; padding: 30px 18px; text-align: center; font-size: 1.5rem; font-weight: bold; cursor: pointer; user-select: none; }
-        .container { padding: 20px; max-width: 600px; margin: -20px auto 20px auto; background: rgba(255, 255, 255, 0.95); border-radius: 20px 20px 0 0; }
+        
+        /* Encabezado ampliado y sin superposición para mostrar completa la imagen de la marca */
+        header { background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('negocio.jpg'); background-size: cover; background-position: center; color: white; padding: 50px 18px; text-align: center; font-size: 1.8rem; font-weight: bold; cursor: pointer; user-select: none; text-shadow: 0 2px 4px rgba(0,0,0,0.6); }
+        
+        .container { padding: 20px; max-width: 600px; margin: 15px auto; background: rgba(255, 255, 255, 0.95); border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         .btn-admin { background: #333; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; margin-bottom: 10px; cursor: pointer; font-weight: bold; }
         
         .table-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 5px 0 15px 0; scrollbar-width: none; }
@@ -29,7 +32,7 @@
         .option-pill.active { background: #d9534f; color: white; border-color: #d9534f; }
         
         /* Barra Inferior Múltiple (Menú General) */
-        .bottom-bar-multi { position: fixed; bottom: 0; width: 100%; background: white; padding: 10px; border-top: 1px solid #ddd; max-width: 600px; left: 50%; transform: translateX(-50%); z-index: 5; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+        .bottom-bar-multi { position: fixed; bottom: 0; width: 100%; background: white; padding: 10px; border-top: 1px solid #ddd; max-width: 600px; left: 50%; transform: translateX(-50%); z-index: 5; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
         .bottom-btn { background: #d9534f; color: white; border: none; padding: 8px 2px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer; text-align: center; }
         .bottom-btn.llevar { background: #333; }
 
@@ -239,7 +242,7 @@
             const meatContainer = document.getElementById('meatContainer');
 
             if (currentItem.isGordita) {
-                document.getElementById('modalInstruction').innerText = "selecciona hasta 2 opciones ingrediente extra cuesta $5";
+                document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones ingrediente extra cuesta $5";
                 
                 sizeContainer.style.display = "block";
                 document.getElementById('sizeLabel').innerText = "Tipo de Gordita:";
