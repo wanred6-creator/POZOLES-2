@@ -9,7 +9,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background-image: url('negocio.jpg'); background-size: cover; background-position: center; background-attachment: fixed; padding-bottom: 110px; }
         
-        /* Contenedor de la marca con imagen completa sin recortes */
         .header-brand { background: #222; text-align: center; cursor: pointer; user-select: none; border-bottom: 3px solid #d9534f; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .brand-img { width: 100%; max-height: 280px; object-fit: contain; display: block; margin: 0 auto; background: #111; }
         .brand-title { color: white; font-size: 1.6rem; font-weight: bold; padding: 12px; background: rgba(0,0,0,0.8); text-shadow: 0 2px 4px rgba(0,0,0,0.6); }
@@ -33,21 +32,19 @@
         .option-pill { padding: 8px 12px; background:#eee; border-radius:15px; cursor:pointer; font-size:0.8rem; border: 1px solid #ddd; }
         .option-pill.active { background: #d9534f; color: white; border-color: #d9534f; }
         
-        /* Barra Inferior Múltiple (Menú General) */
         .bottom-bar-multi { position: fixed; bottom: 0; width: 100%; background: white; padding: 10px; border-top: 1px solid #ddd; max-width: 600px; left: 50%; transform: translateX(-50%); z-index: 5; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
         .bottom-btn { background: #d9534f; color: white; border: none; padding: 8px 2px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer; text-align: center; }
         .bottom-btn.llevar { background: #333; }
 
-        /* Barra Flotante de Previsualización (Modo QR por Mesa) */
         .bottom-bar-single { position: fixed; bottom: 15px; width: calc(100% - 30px); background: #25d366; color: white; padding: 12px 20px; border-radius: 12px; max-width: 570px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.25); font-weight: bold; transition: transform 0.2s; }
         .bottom-bar-single:active { transform: translateX(-50%) scale(0.98); }
 
         .qr-card { background: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; text-align: center; }
+        .history-item { background: #f9f9f9; padding: 8px; border-radius: 6px; margin-bottom: 6px; border-left: 4px solid #d9534f; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
-    <!-- TOCA 5 VECES AQUÍ PARA ENTRAR A ADMINISTRACIÓN -->
     <div class="header-brand" onclick="handleHeaderTap()">
         <img src="negocio.jpg" alt="Pozoles Las Tías" class="brand-img">
         <div class="brand-title">Pozoles Las Tías 🍲</div>
@@ -56,7 +53,6 @@
     <div class="container" id="main-view">
         <p id="tableIndicatorText" style="font-size: 0.85rem; font-weight: bold; color: #d9534f; margin-bottom: 8px; text-align: center; background: #fdf2f2; padding: 6px; border-radius: 6px;"></p>
         
-        <!-- Pestañas de respaldo para menú general -->
         <div class="table-tabs" id="tableTabsContainer">
             <button class="table-tab active" onclick="setActiveTable('Mesa 1')">Mesa 1</button>
             <button class="table-tab" onclick="setActiveTable('Mesa 2')">Mesa 2</button>
@@ -68,22 +64,29 @@
         <div id="menu-list"></div>
     </div>
 
+    <!-- PANEL DE ADMINISTRACIÓN (OCULTO HASTA METER EL PIN) -->
     <div class="container" id="stats-view" style="display:none;">
         <button class="btn-admin" style="background:#d9534f" onclick="toggleView()">⬅ Volver al Menú</button>
-        <h3>📊 Tablero de Ventas y QR</h3>
+        <h3>📊 Tablero y Ventas del Día</h3>
         
-        <!-- Configuración de Seguridad por GPS -->
+        <!-- HISTORIAL DE VENTAS PRIVADO -->
+        <div style="background: #fff; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #ddd;">
+            <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #333;">📜 Historial de Pedidos Enviados:</h4>
+            <div id="salesHistoryList" style="max-height: 220px; overflow-y: auto; margin-bottom: 10px;"></div>
+            <div style="font-weight: bold; font-size: 1rem; text-align: right; margin-bottom: 10px;">Total Vendido: <span id="totalVentasDia">$0</span></div>
+            <button onclick="limpiarHistorialVentas()" style="background: #d9534f; color: white; border: none; padding: 8px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">🗑️ Cerrar Día / Borrar Historial</button>
+        </div>
+
+        <!-- ANTIBROMAS GPS -->
         <div style="background: #e8f4fd; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #b6d4fe;">
             <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #084298;">🛡️ Antibromas por GPS:</h4>
-            <p style="font-size: 0.75rem; color: #555; margin-bottom: 8px;">Registra la ubicación estando dentro del local:</p>
             <button onclick="guardarUbicacionRestaurante()" style="background: #0d6efd; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">📍 Registrar mi ubicación actual aquí</button>
             <p id="gpsStatusText" style="font-size: 0.75rem; color: #333; margin-top: 6px; font-weight: bold;"></p>
         </div>
 
-        <!-- Generador de Códigos QR -->
+        <!-- GENERADOR DE QRS -->
         <div style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #ddd;">
             <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #333;">🖨️ Generador de QR por Mesa:</h4>
-            <p style="font-size: 0.75rem; color: #666; margin-bottom: 8px;">Enlace base de tu sitio (autodetectado):</p>
             <div style="display: flex; gap: 6px; margin-bottom: 10px;">
                 <input type="text" id="siteUrlInput" placeholder="https://tu-usuario.github.io/tu-repo/" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.8rem;">
                 <button onclick="guardarYGenerarQRs()" style="background: #333; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">Actualizar</button>
@@ -91,11 +94,10 @@
             <div id="allQrContainer" style="margin-top: 10px;"></div>
         </div>
 
-        <div id="orders-history" style="margin-top:15px"></div>
-        <button class="btn-admin" style="background:#666; margin-top:20px" onclick="resetStats()">🗑️ Borrar Historial de Ventas</button>
+        <button class="btn-admin" style="background:#666; margin-top:20px" onclick="location.reload()">🔄 Actualizar Datos</button>
     </div>
 
-    <!-- Barra Inferior Múltiple (Menú General) -->
+    <!-- BOTONERA MÚLTIPLE (LOCAL) -->
     <div class="bottom-bar-multi" id="multiTableBar">
         <button class="bottom-btn" onclick="abrirCart('Mesa 1')" id="btn-Mesa 1">M1 (0)</button>
         <button class="bottom-btn" onclick="abrirCart('Mesa 2')" id="btn-Mesa 2">M2 (0)</button>
@@ -104,7 +106,7 @@
         <button class="bottom-btn llevar" onclick="abrirCart('Para llevar')" id="btn-Para llevar">Llevar (0)</button>
     </div>
 
-    <!-- Barra Flotante de Previsualización (Modo QR por Mesa) -->
+    <!-- BOTONERA ÚNICA (CLIENTE QR) -->
     <div class="bottom-bar-single" id="singleCartBar" onclick="abrirCart(activeTable)" style="display: none;">
         <div style="display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 1.4rem;">🛒</span>
@@ -116,7 +118,7 @@
         <div style="font-size: 1.1rem; background: rgba(0,0,0,0.15); padding: 5px 10px; border-radius: 8px;" id="barTotalText">$0</div>
     </div>
 
-    <!-- Modal de Personalización -->
+    <!-- MODAL DE PRODUCTO -->
     <div class="modal" id="customModal">
         <div class="modal-content">
             <h3 id="modalItemName"></h3>
@@ -141,7 +143,7 @@
         </div>
     </div>
 
-    <!-- Modal del Carrito / Pedido -->
+    <!-- MODAL DE CARRITO -->
     <div class="modal" id="cartModal">
         <div class="modal-content">
             <h3 id="cartModalTitle">Pedido</h3>
@@ -247,14 +249,12 @@
             const meatContainer = document.getElementById('meatContainer');
 
             if (currentItem.isGordita) {
-                document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones ingrediente extra cuesta $5";
-                
+                document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones, ingrediente extra cuesta $5";
                 sizeContainer.style.display = "block";
                 document.getElementById('sizeLabel').innerText = "Tipo de Gordita:";
                 selectedGorditaBase = currentItem.gorditaBases[0];
                 sizeOptionsDiv.innerHTML = currentItem.gorditaBases.map(b => `
                     <div class="option-pill ${b.name === selectedGorditaBase.name ? 'active' : ''}" onclick="selectGorditaBase('${b.name}', ${b.price}, this)">${b.name} ($${b.price})</div>`).join('');
-                
                 document.getElementById('optionsLabel').innerText = "Ingredientes extra (+$5 c/u):";
                 renderOptions();
             } else {
@@ -489,24 +489,27 @@
         function ejecutarEnvioWhatsApp() {
             let currentCart = carts[currentCartLocation] || {};
             let total = 0, msg = `Pedido: ${currentCartLocation}%0A`;
-            let itemsArray = [];
+            let resumenProductos = [];
             
             for(let k in currentCart) { 
-                msg += `• ${currentCart[k].qty}x ${currentCart[k].name} ${currentCart[k].options.length > 0 ? `(${currentCart[k].options.join(' + ')})` : ''} ${currentCart[k].notes ? `[${currentCart[k].notes}]` : ''}%0A`;
-                total += currentCart[k].price * currentCart[k].qty;
-                itemsArray.push({
-                    name: currentCart[k].name,
-                    category: currentCart[k].category || "Otros",
-                    price: currentCart[k].price,
-                    qty: currentCart[k].qty
-                });
+                let item = currentCart[k];
+                msg += `• ${item.qty}x ${item.name} ${item.options.length > 0 ? `(${item.options.join(' + ')})` : ''} ${item.notes ? `[${item.notes}]` : ''}%0A`;
+                total += item.price * item.qty;
+                resumenProductos.push(`${item.qty}x ${item.name}`);
             }
             msg += `%0ATotal: $${total}`;
             
-            let orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            orders.push({ loc: currentCartLocation, total: total, items: itemsArray, time: new Date().toLocaleTimeString() });
-            localStorage.setItem('orders', JSON.stringify(orders));
-            
+            // GUARDAR AUTOMÁTICAMENTE EN EL HISTORIAL PRIVADO DEL DÍA
+            let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
+            history.push({
+                table: currentCartLocation,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                total: total,
+                summary: resumenProductos.join(', ')
+            });
+            localStorage.setItem('salesHistory', JSON.stringify(history));
+
+            // Limpiar carrito de esa mesa
             carts[currentCartLocation] = {};
             saveCarts();
             updateBottomButtons();
@@ -515,12 +518,43 @@
             window.open(`https://wa.me/5215549354467?text=${msg}`, '_blank');
         }
 
+        function cargarHistorialVentas() {
+            let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
+            let container = document.getElementById('salesHistoryList');
+            let totalGeneral = 0;
+
+            if (history.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#777; font-size:0.8rem;">No hay ventas registradas hoy.</p>';
+                document.getElementById('totalVentasDia').innerText = '$0';
+                return;
+            }
+
+            container.innerHTML = history.map((h, index) => {
+                totalGeneral += h.total;
+                return `
+                <div class="history-item">
+                    <b>[${h.time}] ${h.table}</b> - <span style="color:#d9534f; font-weight:bold;">$${h.total}</span><br>
+                    <span style="color:#555;">${h.summary}</span>
+                </div>`;
+            }).join('');
+
+            document.getElementById('totalVentasDia').innerText = '$' + totalGeneral;
+        }
+
+        function limpiarHistorialVentas() {
+            if (confirm("¿Estás seguro de cerrar el día y borrar el historial de ventas?")) {
+                localStorage.removeItem('salesHistory');
+                cargarHistorialVentas();
+                alert("Historial borrado. ¡Listo para un nuevo día!");
+            }
+        }
+
         function guardarUbicacionRestaurante() {
             if (!navigator.geolocation) return alert("Tu dispositivo no soporta GPS.");
             navigator.geolocation.getCurrentPosition(position => {
                 localStorage.setItem('restLat', position.coords.latitude);
                 localStorage.setItem('restLon', position.coords.longitude);
-                document.getElementById('gpsStatusText').innerText = "✅ Ubicación registrada correctamente (Lat: " + position.coords.latitude.toFixed(4) + ", Lon: " + position.coords.longitude.toFixed(4) + ")";
+                document.getElementById('gpsStatusText').innerText = "✅ Ubicación registrada (Lat: " + position.coords.latitude.toFixed(4) + ", Lon: " + position.coords.longitude.toFixed(4) + ")";
                 alert("¡Ubicación del restaurante guardada con éxito!");
             }, error => {
                 alert("Error al obtener la ubicación. Asegúrate de activar el GPS.");
@@ -541,8 +575,8 @@
             main.style.display = (main.style.display === 'none') ? 'block' : 'none';
             stats.style.display = (stats.style.display === 'none') ? 'block' : 'none';
             if(stats.style.display === 'block') {
-                loadStats();
                 cargarConfigGuardada();
+                cargarHistorialVentas(); // Carga las ventas al entrar al panel
             }
         }
 
@@ -558,7 +592,6 @@
         function cargarConfigGuardada() {
             let savedUrl = localStorage.getItem('siteUrl');
             if(!savedUrl) {
-                // Autodetectar URL base del sitio actual sin parámetros
                 savedUrl = window.location.href.split('?')[0];
                 localStorage.setItem('siteUrl', savedUrl);
             }
@@ -589,73 +622,13 @@
             }).join('');
         }
 
-        function loadStats() {
-            let orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            let totalGeneral = orders.reduce((sum, o) => sum + o.total, 0);
-            let categoryTotals = {};
-            let articleTotals = {};
-
-            orders.forEach(o => {
-                if(o.items) {
-                    o.items.forEach(item => {
-                        let cat = item.category || "Otros";
-                        categoryTotals[cat] = (categoryTotals[cat] || 0) + (item.price * item.qty);
-                        let artName = item.name;
-                        if(!articleTotals[artName]) articleTotals[artName] = { qty: 0, total: 0 };
-                        articleTotals[artName].qty += item.qty;
-                        articleTotals[artName].total += (item.price * item.qty);
-                    });
-                }
-            });
-
-            let categoryHTML = Object.keys(categoryTotals).map(cat => `
-                <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.9rem;">
-                    <span>📂 ${cat}</span>
-                    <b>$${categoryTotals[cat]}</b>
-                </div>
-            `).join('') || '<p style="color:#777; font-size:0.85rem; text-align:center;">No hay ventas registradas aún.</p>';
-
-            let articleHTML = Object.keys(articleTotals).map(art => `
-                <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; font-size: 0.85rem;">
-                    <span>🍲 ${art} (<b>${articleTotals[art].qty} pzas</b>)</span>
-                    <b>$${articleTotals[art].total}</b>
-                </div>
-            `).join('') || '<p style="color:#777; font-size:0.85rem; text-align:center;">No hay ventas registradas aún.</p>';
-
-            document.getElementById('orders-history').innerHTML = `
-                <div style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #d9534f;">
-                    <span style="font-size:0.85rem; color:#555;">Total General del Día:</span><br>
-                    <b style="font-size: 1.3rem; color: #d9534f;">$${totalGeneral}</b>
-                </div>
-                
-                <h4 style="margin-bottom: 8px; font-size: 0.95rem; color: #333;">📋 Ventas por Categoría:</h4>
-                <div style="background: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
-                    ${categoryHTML}
-                </div>
-
-                <h4 style="margin-bottom: 8px; font-size: 0.95rem; color: #333;">📦 Ventas por Artículo (Desglose):</h4>
-                <div style="background: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
-                    ${articleHTML}
-                </div>
-
-                <h4 style="margin-bottom: 8px; font-size: 0.95rem; color: #333;">🕒 Historial de Pedidos:</h4>
-                ` + orders.map(o => `<div style="padding: 6px 0; border-bottom: 1px dashed #eee; font-size: 0.85rem; color:#444;">${o.time} - <b>${o.loc}</b> - $${o.total}</div>`).join('');
-        }
-
-        function resetStats() { 
-            if(confirm("¿Seguro que deseas borrar el historial de ventas?")) { 
-                localStorage.removeItem('orders'); 
-                loadStats(); 
-            } 
-        }
-
         document.getElementById('menu-list').innerHTML = menu.map(item => `
             <div class="menu-item" onclick="abrirModal(${item.id})">
                 <div style="display:flex; align-items:center; gap:10px">
                     <img src="${item.img}" class="menu-img">
                     <div>
                         <h3>${item.name}</h3>
-                        <p>${item.sizes ? 'Desde $' + item.sizes[0].price : '$' + item.price + '.00'}</p>
+                        <p>${(item.id === 1 || item.id === 2) ? '$100' : (item.sizes ? 'Desde $' + item.sizes[0].price : '$' + item.price + '.00')}</p>
                     </div>
                 </div>
                 <button class="add-btn">Agregar</button>
