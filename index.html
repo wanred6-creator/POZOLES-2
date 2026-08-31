@@ -77,13 +77,6 @@
             <button onclick="limpiarHistorialVentas()" style="background: #d9534f; color: white; border: none; padding: 8px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">🗑️ Cerrar Día / Borrar Historial</button>
         </div>
 
-        <!-- ANTIBROMAS GPS -->
-        <div style="background: #e8f4fd; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #b6d4fe;">
-            <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #084298;">🛡️ Antibromas por GPS:</h4>
-            <button onclick="guardarUbicacionRestaurante()" style="background: #0d6efd; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">📍 Registrar mi ubicación actual aquí</button>
-            <p id="gpsStatusText" style="font-size: 0.75rem; color: #333; margin-top: 6px; font-weight: bold;"></p>
-        </div>
-
         <!-- GENERADOR DE QRS -->
         <div style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #ddd;">
             <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #333;">🖨️ Generador de QR por Mesa:</h4>
@@ -129,6 +122,12 @@
                 <div id="sizeOptions" style="display:flex; gap:8px; margin-top:5px"></div>
             </div>
 
+            <!-- CONTENEDOR TÉRMINO PAMBAZO -->
+            <div id="pambazoStyleContainer" style="margin-top:10px; display:none;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#555;">Término de cocinado:</label>
+                <div id="pambazoStyleOptions" style="display:flex; gap:8px; margin-top:5px"></div>
+            </div>
+
             <div id="meatContainer" style="margin-top:10px;">
                 <label style="font-size:0.8rem; font-weight:bold; color:#555;" id="optionsLabel">Opciones:</label>
                 <div id="meatOptions" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:5px"></div>
@@ -157,6 +156,11 @@
 
     <script>
         const PIN_ADMIN = "1234"; 
+
+        // 📍 COORDENADAS FIJAS DEL RESTAURANTE
+        const REST_LAT = 19.6728265; 
+        const REST_LON = -99.2188080; 
+
         let tapCounter = 0;
         let tapTimer = null;
         let isQrMode = false;
@@ -190,7 +194,7 @@
                 isGordita: true 
             },
             { id: 5, name: "Quesadilla", category: "Antojitos", price: 30, options: ["Quesillo", "Carne", "Chicharrón", "Hongos", "Flor", "Pollo"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
-            { id: 6, name: "Pambazo", category: "Antojitos", price: 35, options: ["Sin papa", "Papa con chorizo", "Pollo", "Carne", "Quesillo"], img: "pambazo.jpg", hasTakeout: false, isMulti: true },
+            { id: 6, name: "Pambazo", category: "Antojitos", price: 35, options: ["Sin papa", "Papa con chorizo", "Pollo", "Carne", "Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, isMulti: true },
             { id: 7, name: "Tostada", category: "Antojitos", price: 30, options: ["Pollo", "Res", "Pata"], img: "tostada.jpg", hasTakeout: false, isMulti: false },
             { id: 8, name: "Agua de Jamaica", category: "Bebidas", price: 40, options: ["Litro ($40)", "Medio litro ($20)"], img: "jamaica.jpg", hasTakeout: false, isMulti: false },
             { id: 9, name: "Coca-Cola", category: "Bebidas", price: 30, options: [], img: "cocacola.jpg", hasTakeout: false, isMulti: false },
@@ -204,6 +208,7 @@
         let currentCartLocation = "Mesa 1";
         let selectedSize = null;
         let selectedGorditaBase = null;
+        let selectedPambazoStyle = "Normal";
         let selectedOptions = []; 
         let currentItem = null;
 
@@ -246,7 +251,13 @@
             
             const sizeContainer = document.getElementById('sizeContainer');
             const sizeOptionsDiv = document.getElementById('sizeOptions');
+            const pambazoStyleContainer = document.getElementById('pambazoStyleContainer');
+            const pambazoStyleOptionsDiv = document.getElementById('pambazoStyleOptions');
             const meatContainer = document.getElementById('meatContainer');
+
+            // Resetear contenedores
+            sizeContainer.style.display = "none";
+            pambazoStyleContainer.style.display = "none";
 
             if (currentItem.isGordita) {
                 document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones, ingrediente extra cuesta $5";
@@ -257,13 +268,18 @@
                     <div class="option-pill ${b.name === selectedGorditaBase.name ? 'active' : ''}" onclick="selectGorditaBase('${b.name}', ${b.price}, this)">${b.name} ($${b.price})</div>`).join('');
                 document.getElementById('optionsLabel').innerText = "Ingredientes extra (+$5 c/u):";
                 renderOptions();
+            } else if (currentItem.isPambazo) {
+                document.getElementById('modalInstruction').innerText = "Elige el término y hasta 2 opciones (extra +$10)";
+                pambazoStyleContainer.style.display = "block";
+                selectedPambazoStyle = "Normal";
+                const estilos = ["Normal", "Dorado"];
+                pambazoStyleOptionsDiv.innerHTML = estilos.map(est => `
+                    <div class="option-pill ${est === selectedPambazoStyle ? 'active' : ''}" onclick="selectPambazoStyle('${est}', this)">${est}</div>`).join('');
+                document.getElementById('optionsLabel').innerText = "Opciones:";
+                renderOptions();
             } else {
                 if (currentItem.isMulti) {
-                    if (currentItem.name === "Pambazo") {
-                        document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (cada ingrediente extra cuesta $10)";
-                    } else {
-                        document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (el precio base incluye 1, cada ingrediente extra cuesta $5)";
-                    }
+                    document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (el precio base incluye 1, cada ingrediente extra cuesta $5)";
                 } else {
                     document.getElementById('modalInstruction').innerText = "";
                 }
@@ -276,7 +292,6 @@
                     sizeOptionsDiv.innerHTML = currentItem.sizes.map(s => `
                         <div class="option-pill ${s.name === selectedSize.name ? 'active' : ''}" onclick="selectSize('${s.name}', ${s.price}, this)">${s.name} ($${s.price})</div>`).join('');
                 } else {
-                    sizeContainer.style.display = "none";
                     selectedSize = null;
                 }
                 renderOptions();
@@ -300,6 +315,12 @@
             el.classList.add('active');
         }
 
+        function selectPambazoStyle(style, el) {
+            selectedPambazoStyle = style;
+            document.querySelectorAll('#pambazoStyleOptions .option-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+        }
+
         function renderOptions() {
             const container = document.getElementById('meatOptions');
             const meatContainer = document.getElementById('meatContainer');
@@ -315,7 +336,7 @@
         }
 
         function toggleOption(opt, el) {
-            if (currentItem.isMulti || currentItem.isGordita) {
+            if (currentItem.isMulti || currentItem.isGordita || currentItem.isPambazo) {
                 if (selectedOptions.includes(opt)) {
                     selectedOptions = selectedOptions.filter(o => o !== opt);
                     el.classList.remove('active');
@@ -338,23 +359,22 @@
             if (currentItem.isGordita) {
                 price = selectedGorditaBase.price + (selectedOptions.length * 5);
                 finalName = `${currentItem.name} (${selectedGorditaBase.name})`;
+            } else if (currentItem.isPambazo) {
+                finalName = `${currentItem.name} (${selectedPambazoStyle})`;
+                if (selectedOptions.length > 1) {
+                    price = currentItem.price + (selectedOptions.length - 1) * 10;
+                } else {
+                    price = currentItem.price;
+                }
             } else {
                 if (selectedSize) finalName += ` (${selectedSize.name})`;
                 if (currentItem.name === "Agua de Jamaica" && selectedOptions.includes("Medio litro ($20)")) price = 20;
                 
                 if (currentItem.isMulti) {
-                    if (currentItem.name === "Pambazo") {
-                        if (selectedOptions.length > 1) {
-                            price = currentItem.price + (selectedOptions.length - 1) * 10;
-                        } else {
-                            price = currentItem.price;
-                        }
+                    if (selectedOptions.length > 1) {
+                        price = currentItem.price + (selectedOptions.length - 1) * 5;
                     } else {
-                        if (selectedOptions.length > 1) {
-                            price = currentItem.price + (selectedOptions.length - 1) * 5;
-                        } else {
-                            price = currentItem.price;
-                        }
+                        price = currentItem.price;
                     }
                 }
             }
@@ -362,7 +382,7 @@
             if (takeout) { price += 5; finalName += " (Llevar)"; }
             
             const notes = document.getElementById('itemNotes').value;
-            const key = currentItem.id + (selectedSize ? selectedSize.name : '') + (selectedGorditaBase ? selectedGorditaBase.name : '') + selectedOptions.join(',') + takeout + notes;
+            const key = currentItem.id + (selectedSize ? selectedSize.name : '') + (selectedGorditaBase ? selectedGorditaBase.name : '') + selectedPambazoStyle + selectedOptions.join(',') + takeout + notes;
             
             if (!carts[activeTable]) carts[activeTable] = {};
             carts[activeTable][key] = { 
@@ -444,14 +464,6 @@
             let currentCart = carts[currentCartLocation] || {};
             if(Object.keys(currentCart).length === 0) return alert("Este pedido está vacío");
 
-            let restLat = localStorage.getItem('restLat');
-            let restLon = localStorage.getItem('restLon');
-
-            if (!restLat || !restLon) {
-                ejecutarEnvioWhatsApp();
-                return;
-            }
-
             if (!navigator.geolocation) {
                 alert("Tu navegador no soporta geolocalización.");
                 return;
@@ -462,7 +474,7 @@
             navigator.geolocation.getCurrentPosition(position => {
                 let userLat = position.coords.latitude;
                 let userLon = position.coords.longitude;
-                let distancia = calcularDistancia(parseFloat(restLat), parseFloat(restLon), userLat, userLon);
+                let distancia = calcularDistancia(REST_LAT, REST_LON, userLat, userLon);
 
                 if (distancia > 150) {
                     alert("Lo sentimos, estás fuera del restaurante (" + Math.round(distancia) + " mts). Este menú solo permite enviar pedidos estando en el establecimiento.");
@@ -499,7 +511,6 @@
             }
             msg += `%0ATotal: $${total}`;
             
-            // GUARDAR AUTOMÁTICAMENTE EN EL HISTORIAL PRIVADO DEL DÍA
             let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
             history.push({
                 table: currentCartLocation,
@@ -509,7 +520,6 @@
             });
             localStorage.setItem('salesHistory', JSON.stringify(history));
 
-            // Limpiar carrito de esa mesa
             carts[currentCartLocation] = {};
             saveCarts();
             updateBottomButtons();
@@ -549,18 +559,6 @@
             }
         }
 
-        function guardarUbicacionRestaurante() {
-            if (!navigator.geolocation) return alert("Tu dispositivo no soporta GPS.");
-            navigator.geolocation.getCurrentPosition(position => {
-                localStorage.setItem('restLat', position.coords.latitude);
-                localStorage.setItem('restLon', position.coords.longitude);
-                document.getElementById('gpsStatusText').innerText = "✅ Ubicación registrada (Lat: " + position.coords.latitude.toFixed(4) + ", Lon: " + position.coords.longitude.toFixed(4) + ")";
-                alert("¡Ubicación del restaurante guardada con éxito!");
-            }, error => {
-                alert("Error al obtener la ubicación. Asegúrate de activar el GPS.");
-            }, { enableHighAccuracy: true });
-        }
-
         function pedirPinYEntrar() {
             let ingreso = prompt("Ingresa el PIN de administrador:");
             if (ingreso === PIN_ADMIN) {
@@ -576,7 +574,7 @@
             stats.style.display = (stats.style.display === 'none') ? 'block' : 'none';
             if(stats.style.display === 'block') {
                 cargarConfigGuardada();
-                cargarHistorialVentas(); // Carga las ventas al entrar al panel
+                cargarHistorialVentas();
             }
         }
 
@@ -597,13 +595,6 @@
             }
             document.getElementById('siteUrlInput').value = savedUrl;
             mostrarTodosLosQRs(savedUrl);
-
-            let restLat = localStorage.getItem('restLat');
-            if(restLat) {
-                document.getElementById('gpsStatusText').innerText = "✅ Ubicación del restaurante activa configurada.";
-            } else {
-                document.getElementById('gpsStatusText').innerText = "⚠️ Aún no registras la ubicación. Presiona el botón estando en el local.";
-            }
         }
 
         function mostrarTodosLosQRs(baseUrl) {
