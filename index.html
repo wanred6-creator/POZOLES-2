@@ -41,6 +41,24 @@
 
         .qr-card { background: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; text-align: center; }
         .history-item { background: #f9f9f9; padding: 8px; border-radius: 6px; margin-bottom: 6px; border-left: 4px solid #d9534f; font-size: 0.8rem; }
+
+        #ticket-imprimible { display: none; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #ticket-imprimible, #ticket-imprimible * { visibility: visible; }
+            #ticket-imprimible { 
+                display: block !important; 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 58mm; 
+                font-family: 'Courier New', Courier, monospace; 
+                font-size: 11px; 
+                color: black; 
+                padding: 5px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -69,12 +87,12 @@
         <button class="btn-admin" style="background:#d9534f" onclick="toggleView()">⬅ Volver al Menú</button>
         <h3>📊 Tablero y Ventas del Día</h3>
         
-        <!-- HISTORIAL DE VENTAS PRIVADO -->
+        <!-- HISTORIAL DE VENTAS PRIVADO LOCAL -->
         <div style="background: #fff; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #ddd;">
-            <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #333;">📜 Historial de Pedidos Enviados:</h4>
+            <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #333;">📜 Historial de Pedidos Locales:</h4>
             <div id="salesHistoryList" style="max-height: 220px; overflow-y: auto; margin-bottom: 10px;"></div>
             <div style="font-weight: bold; font-size: 1rem; text-align: right; margin-bottom: 10px;">Total Vendido: <span id="totalVentasDia">$0</span></div>
-            <button onclick="limpiarHistorialVentas()" style="background: #d9534f; color: white; border: none; padding: 8px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">🗑️ Cerrar Día / Borrar Historial</button>
+            <button onclick="limpiarHistorialVentas()" style="background: #d9534f; color: white; border: none; padding: 8px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">🗑️ Cerrar Día / Borrar Historial Local</button>
         </div>
 
         <!-- GENERADOR DE QRS -->
@@ -122,7 +140,6 @@
                 <div id="sizeOptions" style="display:flex; gap:8px; margin-top:5px"></div>
             </div>
 
-            <!-- CONTENEDOR TÉRMINO PAMBAZO -->
             <div id="pambazoStyleContainer" style="margin-top:10px; display:none;">
                 <label style="font-size:0.8rem; font-weight:bold; color:#555;">Término de cocinado:</label>
                 <div id="pambazoStyleOptions" style="display:flex; gap:8px; margin-top:5px"></div>
@@ -149,10 +166,14 @@
             <div id="cartItemsList" style="margin: 15px 0;"></div>
             <div style="font-weight:bold; font-size:1.2rem; text-align:right; margin-bottom:20px;">Total: <span id="cartTotal">$0</span></div>
             <button style="width:100%; padding:12px; background:#25d366; color:white; border:none; border-radius:8px; font-weight:bold; margin-bottom:10px" onclick="enviarWhatsAppValidado()">Enviar por WhatsApp 📲</button>
+            <button style="width:100%; padding:10px; background:#333; color:white; border:none; border-radius:8px; font-weight:bold; margin-bottom:10px" onclick="imprimirTicketActual()">🖨️ Imprimir Ticket</button>
             <button style="width:100%; padding:10px; background:#f44336; color:white; border:none; border-radius:8px;" onclick="limpiarCarritoActual()">🗑️ Limpiar este pedido</button>
             <button style="width:100%; padding:10px; background:none; border:none; color:#666; margin-top:10px" onclick="document.getElementById('cartModal').style.display='none'">Seguir comprando</button>
         </div>
     </div>
+
+    <!-- TICKET OCULTO PARA IMPRESIÓN TÉRMICA -->
+    <div id="ticket-imprimible"></div>
 
     <script>
         const PIN_ADMIN = "1234"; 
@@ -160,6 +181,9 @@
         // 📍 COORDENADAS FIJAS DEL RESTAURANTE
         const REST_LAT = 19.6728265; 
         const REST_LON = -99.2188080; 
+
+        // 🔗 URL DE GOOGLE APPS SCRIPT PARA ENVIAR VENTAS A LA NUBE
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7bgZCjfF2uQyonqh6HRuhEiuyge09Rf7fdRgCUUyVDd40ZYJP_eywYgTBFbULeWY/exec";
 
         let tapCounter = 0;
         let tapTimer = null;
@@ -255,7 +279,6 @@
             const pambazoStyleOptionsDiv = document.getElementById('pambazoStyleOptions');
             const meatContainer = document.getElementById('meatContainer');
 
-            // Resetear contenedores
             sizeContainer.style.display = "none";
             pambazoStyleContainer.style.display = "none";
 
@@ -511,12 +534,33 @@
             }
             msg += `%0ATotal: $${total}`;
             
+            let fechaActual = new Date().toLocaleDateString();
+            let horaActual = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            let resumenTexto = resumenProductos.join(', ');
+
+            // 1. REGISTRO EN GOOGLE SHEETS (EN LA NUBE)
+            if (GOOGLE_SCRIPT_URL) {
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fecha: fechaActual,
+                        hora: horaActual,
+                        mesa: currentCartLocation,
+                        total: total,
+                        resumen: resumenTexto
+                    })
+                }).catch(err => console.error("Error enviando a Sheets:", err));
+            }
+
+            // 2. REGISTRO LOCAL EN EL DISPOSITIVO
             let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
             history.push({
                 table: currentCartLocation,
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                time: horaActual,
                 total: total,
-                summary: resumenProductos.join(', ')
+                summary: resumenTexto
             });
             localStorage.setItem('salesHistory', JSON.stringify(history));
 
@@ -528,13 +572,58 @@
             window.open(`https://wa.me/5215549354467?text=${msg}`, '_blank');
         }
 
+        function imprimirTicketActual() {
+            let currentCart = carts[currentCartLocation] || {};
+            if(Object.keys(currentCart).length === 0) return alert("El pedido está vacío, no hay nada que imprimir.");
+
+            let total = 0;
+            let itemsHtml = '';
+            
+            for(let k in currentCart) {
+                let item = currentCart[k];
+                let subtotal = item.price * item.qty;
+                total += subtotal;
+                itemsHtml += `
+                    <div style="display:flex; justify-content:space-between;">
+                        <span><b>${item.qty}x</b> ${item.name}</span>
+                        <span>$${subtotal}</span>
+                    </div>`;
+                if(item.options && item.options.length > 0) {
+                    itemsHtml += `<div style="font-size:10px; padding-left:10px;">  • ${item.options.join(', ')}</div>`;
+                }
+                if(item.notes) {
+                    itemsHtml += `<div style="font-size:10px; padding-left:10px;">  * Nota: ${item.notes}</div>`;
+                }
+            }
+
+            let ticketDiv = document.getElementById('ticket-imprimible');
+            ticketDiv.innerHTML = `
+                <div style="text-align:center; font-weight:bold; font-size:14px;">POZOLES LAS TÍAS</div>
+                <div style="text-align:center; font-size:10px;">Cuautitlán Izcalli</div>
+                <div style="text-align:center; font-size:10px; margin-bottom: 5px;">--------------------------------</div>
+                <div><b>Zona/Mesa:</b> ${currentCartLocation}</div>
+                <div><b>Fecha:</b> ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                <div style="text-align:center; font-size:10px; margin-bottom: 5px;">--------------------------------</div>
+                ${itemsHtml}
+                <div style="text-align:center; font-size:10px; margin-top: 5px;">--------------------------------</div>
+                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:13px;">
+                    <span>TOTAL:</span>
+                    <span>$${total}</span>
+                </div>
+                <div style="text-align:center; font-size:10px; margin-top:15px;">¡Gracias por su preferencia!</div>
+                <div style="text-align:center; font-size:9px; margin-top:5px;">Conserve su ticket</div>
+            `;
+
+            window.print();
+        }
+
         function cargarHistorialVentas() {
             let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
             let container = document.getElementById('salesHistoryList');
             let totalGeneral = 0;
 
             if (history.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#777; font-size:0.8rem;">No hay ventas registradas hoy.</p>';
+                container.innerHTML = '<p style="text-align:center; color:#777; font-size:0.8rem;">No hay ventas locales registradas hoy.</p>';
                 document.getElementById('totalVentasDia').innerText = '$0';
                 return;
             }
@@ -552,10 +641,10 @@
         }
 
         function limpiarHistorialVentas() {
-            if (confirm("¿Estás seguro de cerrar el día y borrar el historial de ventas?")) {
+            if (confirm("¿Estás seguro de cerrar el día y borrar el historial local? (Los datos en Google Sheets no se borrarán)")) {
                 localStorage.removeItem('salesHistory');
                 cargarHistorialVentas();
-                alert("Historial borrado. ¡Listo para un nuevo día!");
+                alert("Historial local borrado. ¡Listo para un nuevo día!");
             }
         }
 
