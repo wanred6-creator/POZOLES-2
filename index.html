@@ -82,7 +82,7 @@
         <div id="menu-list"></div>
     </div>
 
-    <!-- PANEL DE ADMINISTRACIÓN (OCULTO HASTA METER EL PIN) -->
+    <!-- PANEL DE ADMINISTRACIÓN -->
     <div class="container" id="stats-view" style="display:none;">
         <button class="btn-admin" style="background:#d9534f" onclick="toggleView()">⬅ Volver al Menú</button>
         <h3>📊 Tablero y Ventas del Día</h3>
@@ -160,7 +160,6 @@
             <div id="cartItemsList" style="margin: 15px 0;"></div>
             <div style="font-weight:bold; font-size:1.2rem; text-align:right; margin-bottom:20px;">Total: <span id="cartTotal">$0</span></div>
             
-            <!-- BOTÓN PRINCIPAL DE ENVÍO DIRECTO A COCINA (NUBE) -->
             <button style="width:100%; padding:14px; background:#d9534f; color:white; border:none; border-radius:8px; font-weight:bold; font-size:1rem; margin-bottom:10px; cursor:pointer;" onclick="enviarPedidoCocinaValidado()">🚀 Enviar Pedido a Cocina</button>
             
             <button style="width:100%; padding:10px; background:#333; color:white; border:none; border-radius:8px; font-weight:bold; margin-bottom:10px; cursor:pointer;" onclick="imprimirTicketActual()">🖨️ Imprimir Ticket</button>
@@ -175,7 +174,9 @@
         const PIN_ADMIN = "1234"; 
         const REST_LAT = 19.6728265; 
         const REST_LON = -99.2188080; 
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7bgZCjfF2uQyonqh6HRuhEiuyge09Rf7fdRgCUUyVDd40ZYJP_eywYgTBFbULeWY/exec";
+        
+        // 🔗 NUEVA URL DE GOOGLE APPS SCRIPT ACTUALIZADA
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyRcwSrUkiZMN5YePhfh2AMpWUCLk67160D0Mnhn7fiCW5qB7Pk6UbjiS06uE3C-39_/exec";
 
         let tapCounter = 0;
         let tapTimer = null;
@@ -536,7 +537,6 @@
             let horaActual = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             let resumenTexto = resumenProductos.join(' | ');
 
-            // ENVÍO AUTOMÁTICO A GOOGLE SHEETS
             if (GOOGLE_SCRIPT_URL) {
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
@@ -552,7 +552,6 @@
                 }).catch(err => console.error("Error enviando a Sheets:", err));
             }
 
-            // REGISTRO LOCAL
             let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
             history.push({
                 table: currentCartLocation,
