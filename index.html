@@ -48,24 +48,6 @@
 
         .qr-card { background: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; text-align: center; }
         .history-item { background: #f9f9f9; padding: 8px; border-radius: 6px; margin-bottom: 6px; border-left: 4px solid #d9534f; font-size: 0.8rem; }
-
-        #ticket-imprimible { display: none; }
-
-        @media print {
-            body * { visibility: hidden; }
-            #ticket-imprimible, #ticket-imprimible * { visibility: visible; }
-            #ticket-imprimible { 
-                display: block !important; 
-                position: absolute; 
-                left: 0; 
-                top: 0; 
-                width: 58mm; 
-                font-family: 'Courier New', Courier, monospace; 
-                font-size: 11px; 
-                color: black; 
-                padding: 5px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -167,13 +149,10 @@
             <h3 id="cartModalTitle">Pedido</h3>
             <div id="cartItemsList" style="margin: 15px 0;"></div>
             
-            <div style="font-weight:bold; font-size:1.1rem; text-align:right; margin-bottom:10px;">Subtotal: <span id="cartSubtotal">$0</span></div>
+            <div style="font-weight:bold; font-size:1.1rem; text-align:right; margin-bottom:12px;">Subtotal: <span id="cartSubtotal">$0</span></div>
             
-            <button style="width:100%; padding:12px; background:#d9534f; color:white; border:none; border-radius:8px; font-weight:bold; font-size:0.95rem; margin-bottom:8px; cursor:pointer;" onclick="enviarPedidoCocinaValidado()">🚀 Enviar este pedido a Cocina</button>
-            <button style="width:100%; padding:9px; background:#333; color:white; border:none; border-radius:8px; font-weight:bold; font-size:0.85rem; margin-bottom:12px; cursor:pointer;" onclick="imprimirTicketActual()">🖨️ Imprimir Ticket de Mesa</button>
+            <button style="width:100%; padding:12px; background:#d9534f; color:white; border:none; border-radius:8px; font-weight:bold; font-size:0.95rem; margin-bottom:12px; cursor:pointer;" onclick="enviarPedidoCocinaValidado()">🚀 Enviar este pedido a Cocina</button>
             
-            <hr style="border:0; border-top:1px solid #eee; margin:12px 0;">
-
             <button style="width:100%; padding:14px; background:#25d366; color:white; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer;" onclick="abrirPantallaPago()">💳 Culminar Visita y Pagar Cuenta</button>
             
             <button style="width:100%; padding:10px; background:none; border:none; color:#666; margin-top:10px; cursor:pointer;" onclick="document.getElementById('cartModal').style.display='none'">Seguir viendo el menú</button>
@@ -184,19 +163,18 @@
     <div class="modal" id="paymentModal">
         <div class="modal-content">
             <h3>💳 Cuenta Final y Pago</h3>
-            <div id="paymentSummary" style="margin: 10px 0; font-size:0.85rem; color:#555;"></div>
             
-            <div style="background:#fdf2f2; padding:10px; border-radius:8px; margin-bottom:12px; text-align:right;">
-                <div style="font-size:0.8rem; color:#666;">Total de Consumo: <span id="paySubtotal" style="font-weight:bold;">$0</span></div>
+            <div style="background:#fdf2f2; padding:12px; border-radius:8px; margin: 12px 0; text-align:right;">
+                <div style="font-size:0.85rem; color:#666;">Total de Consumo: <span id="paySubtotal" style="font-weight:bold;">$0</span></div>
                 
-                <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
                     <label style="font-size:0.85rem; font-weight:bold; color:#333;">Propina voluntaria:</label>
-                    <select id="tipSelect" onchange="actualizarTotalFinal()" style="padding:5px; border-radius:6px; border:1px solid #ccc;">
+                    <select id="tipSelect" onchange="actualizarTotalFinal()" style="padding:6px; border-radius:6px; border:1px solid #ccc; font-weight:bold;">
                         <option value="0">$0 (Sin propina)</option>
-                        <option value="5" id="optTip5" selected>5% ($0)</option>
-                        <option value="10" id="optTip10">10% ($0)</option>
-                        <option value="15" id="optTip15">15% ($0)</option>
-                        <option value="20" id="optTip20">20% ($0)</option>
+                        <option value="5" selected>5%</option>
+                        <option value="10">10%</option>
+                        <option value="15">15%</option>
+                        <option value="20">20%</option>
                     </select>
                 </div>
 
@@ -205,7 +183,6 @@
 
             <label style="font-size:0.85rem; font-weight:bold; color:#333; display:block; margin-bottom:6px;">Selecciona método de pago:</label>
             
-            <!-- 4 BOTONES DE MÉTODO DE PAGO -->
             <div class="pay-method-grid">
                 <button type="button" class="pay-btn active" id="btnEfectivo" onclick="seleccionarMetodo('Efectivo')">💵 Efectivo</button>
                 <button type="button" class="pay-btn" id="btnTransfer" onclick="seleccionarMetodo('Transferencia Manual')">🏦 Transferencia Manual</button>
@@ -213,15 +190,12 @@
                 <button type="button" class="pay-btn" id="btnAzteca" onclick="seleccionarMetodo('Banco Azteca')">🟢 Banco Azteca</button>
             </div>
 
-            <!-- CONTENEDOR DINÁMICO SEGÚN MÉTODO SELECCIONADO -->
             <div id="paymentDetailsContainer" style="margin-bottom:12px;"></div>
 
             <button style="width:100%; padding:14px; background:#d9534f; color:white; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer; margin-bottom:8px;" onclick="confirmarPagoYTerminarVisita()">✅ Confirmar Pago y Cerrar Mesa</button>
             <button style="width:100%; padding:8px; background:none; border:none; color:#666; cursor:pointer;" onclick="document.getElementById('paymentModal').style.display='none'">Regresar al pedido</button>
         </div>
     </div>
-
-    <div id="ticket-imprimible"></div>
 
     <script>
         const PIN_ADMIN = "1234"; 
@@ -612,12 +586,6 @@
             document.getElementById('cartModal').style.display = 'none';
             document.getElementById('paySubtotal').innerText = '$' + subtotalActual;
 
-            // Actualizar textos de propinas dinámicamente
-            document.getElementById('optTip5').text = `5% ($${Math.round(subtotalActual * 0.05)})`;
-            document.getElementById('optTip10').text = `10% ($${Math.round(subtotalActual * 0.10)})`;
-            document.getElementById('optTip15').text = `15% ($${Math.round(subtotalActual * 0.15)})`;
-            document.getElementById('optTip20').text = `20% ($${Math.round(subtotalActual * 0.20)})`;
-
             actualizarTotalFinal();
             seleccionarMetodo('Efectivo');
             document.getElementById('paymentModal').style.display = 'flex';
@@ -640,33 +608,33 @@
                     <div style="font-size:0.85rem; font-weight:bold; margin-top:6px; color:#333;">Su cambio: <span id="changeText" style="color:green;">$0</span></div>`;
             } else if(metodo === 'Transferencia Manual') {
                 container.innerHTML = `
-                    <p style="font-size:0.75rem; color:#666; margin-bottom:6px;">Beneficiaria: <b>ARACELI PEREZ GARCIA</b>[span_0](start_span)[span_0](end_span)</p>
+                    <p style="font-size:0.75rem; color:#666; margin-bottom:6px;">Beneficiaria: <b>ARACELI PEREZ GARCIA</b></p>
                     <div class="bank-card">
-                        <div><b>Banco Azteca</b><br><small>1271 8002 1376 3998 90</small>[span_1](start_span)[span_1](end_span)</div>
+                        <div><b>Banco Azteca</b><br><small>1271 8002 1376 3998 90</small></div>
                         <button class="copy-btn" onclick="copiarClabe('127180021376399890')">Copiar</button>
                     </div>
                     <div class="bank-card">
-                        <div><b>BBVA</b><br><small>0123 2001 5421 3067 03</small>[span_2](start_span)[span_2](end_span)</div>
+                        <div><b>BBVA</b><br><small>0123 2001 5421 3067 03</small></div>
                         <button class="copy-btn" onclick="copiarClabe('012320015421306703')">Copiar</button>
                     </div>
                     <div class="bank-card">
-                        <div><b>Nu Mexico</b><br><small>6381 8001 0114 1650 45</small>[span_3](start_span)[span_3](end_span)</div>
+                        <div><b>Nu Mexico</b><br><small>6381 8001 0114 1650 45</small></div>
                         <button class="copy-btn" onclick="copiarClabe('638180010114165045')">Copiar</button>
                     </div>`;
             } else if(metodo === 'CoDi') {
                 container.innerHTML = `
                     <div style="background:#fdf2f2; padding:12px; border-radius:8px; border:1px solid #d9534f; font-size:0.8rem; text-align:center;">
-                        <p style="font-weight:bold; color:#d9534f; font-size:0.9rem; margin-bottom:6px;">📲 Paga con CoDi®[span_4](start_span)[span_4](end_span)</p>
-                        <p style="color:#444; margin-bottom:8px;">Abre la app de tu banco, selecciona <b>"CoDi®"</b> o <b>"Pagar con QR"</b> y apunta tu cámara al <b>QR CoDi impreso en tu mesa</b>[span_5](start_span)[span_5](end_span).</p>
+                        <p style="font-weight:bold; color:#d9534f; font-size:0.9rem; margin-bottom:6px;">📲 Paga con CoDi®</p>
+                        <p style="color:#444; margin-bottom:8px;">Abre la app de tu banco, selecciona <b>"CoDi®"</b> o <b>"Pagar con QR"</b> y apunta tu cámara al <b>QR CoDi impreso en tu mesa</b>.</p>
                         <span style="font-size:0.75rem; background:#fff; padding:4px 8px; border-radius:4px; border:1px solid #ccc; font-weight:bold;">📷 Escanea el código en la mesa</span>
                     </div>`;
             } else if(metodo === 'Banco Azteca') {
                 container.innerHTML = `
                     <div style="background:#f4f9f4; padding:12px; border-radius:8px; border:1px solid #25d366; font-size:0.8rem; text-align:center;">
                         <p style="font-weight:bold; color:#2e7d32; font-size:0.9rem; margin-bottom:6px;">🟢 Banco Azteca</p>
-                        <p style="color:#444; margin-bottom:8px;">Abre tu app de Banco Azteca y apunta la cámara al <b>QR Banco Azteca impreso en tu mesa</b> para pago rápido[span_6](start_span)[span_6](end_span).</p>
-                        <p style="font-size:0.75rem; color:#333; margin-bottom:4px;">Beneficiaria: <b>ARACELI PEREZ GARCIA</b>[span_7](start_span)[span_7](end_span)</p>
-                        <p style="font-size:0.75rem; color:#333; margin-bottom:6px;">Teléfono: <b>(55) 4935 4467</b>[span_8](start_span)[span_8](end_span)</p>
+                        <p style="color:#444; margin-bottom:8px;">Abre tu app de Banco Azteca y apunta la cámara al <b>QR Banco Azteca impreso en tu mesa</b> para pago rápido.</p>
+                        <p style="font-size:0.75rem; color:#333; margin-bottom:4px;">Beneficiaria: <b>ARACELI PEREZ GARCIA</b></p>
+                        <p style="font-size:0.75rem; color:#333; margin-bottom:6px;">Teléfono: <b>(55) 4935 4467</b></p>
                         <span style="font-size:0.75rem; background:#fff; padding:4px 8px; border-radius:4px; border:1px solid #ccc; font-weight:bold;">📷 Escanea el código en la mesa</span>
                     </div>`;
             }
@@ -742,34 +710,6 @@
             alert("🎉 ¡Mesa cerrada y pagada con éxito! Cuenta registrada en el sistema.");
         }
 
-        function imprimirTicketActual() {
-            let currentCart = carts[currentCartLocation] || {};
-            if(Object.keys(currentCart).length === 0) return alert("El pedido está vacío.");
-
-            let total = 0;
-            let itemsHtml = '';
-            for(let k in currentCart) {
-                let item = currentCart[k];
-                let subtotal = item.price * item.qty;
-                total += subtotal;
-                itemsHtml += `<div style="display:flex; justify-content:space-between;"><span><b>${item.qty}x</b> ${item.name}</span><span>$${subtotal}</span></div>`;
-            }
-
-            let ticketDiv = document.getElementById('ticket-imprimible');
-            ticketDiv.innerHTML = `
-                <div style="text-align:center; font-weight:bold; font-size:14px;">POZOLES LAS TÍAS</div>
-                <div style="text-align:center; font-size:10px;">Cuautitlán Izcalli</div>
-                <div style="text-align:center; font-size:10px; margin-bottom: 5px;">--------------------------------</div>
-                <div><b>Mesa:</b> ${currentCartLocation}</div>
-                <div><b>Hora:</b> ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-                <div style="text-align:center; font-size:10px; margin-bottom: 5px;">--------------------------------</div>
-                ${itemsHtml}
-                <div style="text-align:center; font-size:10px; margin-top: 5px;">--------------------------------</div>
-                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:13px;"><span>TOTAL PARCIAL:</span><span>$${total}</span></div>
-            `;
-            window.print();
-        }
-
         function cargarHistorialVentas() {
             let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
             let container = document.getElementById('salesHistoryList');
@@ -835,7 +775,6 @@
             }).join('');
         }
 
-        // --- PINTAR EL MENÚ PRINCIPAL (RESTAURADO) ---
         document.getElementById('menu-list').innerHTML = menu.map(item => `
             <div class="menu-item" onclick="abrirModal(${item.id})">
                 <div style="display:flex; align-items:center; gap:10px">
