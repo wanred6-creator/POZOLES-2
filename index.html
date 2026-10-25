@@ -506,8 +506,9 @@
 
                 ejecutarEnvioWhatsApp();
             }, error => {
-                alert("Por favor permite el acceso a tu ubicación GPS para confirmar que estás en el restaurante y enviar tu pedido.");
-            }, { timeout: 10000, enableHighAccuracy: true });
+                console.error(error);
+                alert("No se pudo obtener tu ubicación. Por favor asegúrate de permitir el acceso al GPS en la configuración de tu navegador (Safari/Chrome) para enviar el pedido.");
+            }, { timeout: 12000, enableHighAccuracy: true, maximumAge: 0 });
         }
 
         function calcularDistancia(lat1, lon1, lat2, lon2) {
@@ -538,7 +539,6 @@
             let horaActual = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             let resumenTexto = resumenProductos.join(', ');
 
-            // 1. REGISTRO EN GOOGLE SHEETS (EN LA NUBE)
             if (GOOGLE_SCRIPT_URL) {
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
@@ -554,7 +554,6 @@
                 }).catch(err => console.error("Error enviando a Sheets:", err));
             }
 
-            // 2. REGISTRO LOCAL EN EL DISPOSITIVO
             let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
             history.push({
                 table: currentCartLocation,
