@@ -87,7 +87,6 @@
         <button class="btn-admin" style="background:#d9534f" onclick="toggleView()">⬅ Volver al Menú</button>
         <h3>📊 Tablero y Ventas del Día</h3>
         
-        <!-- HISTORIAL DE VENTAS PRIVADO LOCAL -->
         <div style="background: #fff; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #ddd;">
             <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #333;">📜 Historial de Pedidos Locales:</h4>
             <div id="salesHistoryList" style="max-height: 220px; overflow-y: auto; margin-bottom: 10px;"></div>
@@ -95,7 +94,6 @@
             <button onclick="limpiarHistorialVentas()" style="background: #d9534f; color: white; border: none; padding: 8px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">🗑️ Cerrar Día / Borrar Historial Local</button>
         </div>
 
-        <!-- GENERADOR DE QRS -->
         <div style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #ddd;">
             <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #333;">🖨️ Generador de QR por Mesa:</h4>
             <div style="display: flex; gap: 6px; margin-bottom: 10px;">
@@ -108,7 +106,6 @@
         <button class="btn-admin" style="background:#666; margin-top:20px" onclick="location.reload()">🔄 Actualizar Datos</button>
     </div>
 
-    <!-- BOTONERA MÚLTIPLE (LOCAL) -->
     <div class="bottom-bar-multi" id="multiTableBar">
         <button class="bottom-btn" onclick="abrirCart('Mesa 1')" id="btn-Mesa 1">M1 (0)</button>
         <button class="bottom-btn" onclick="abrirCart('Mesa 2')" id="btn-Mesa 2">M2 (0)</button>
@@ -117,7 +114,6 @@
         <button class="bottom-btn llevar" onclick="abrirCart('Para llevar')" id="btn-Para llevar">Llevar (0)</button>
     </div>
 
-    <!-- BOTONERA ÚNICA (CLIENTE QR) -->
     <div class="bottom-bar-single" id="singleCartBar" onclick="abrirCart(activeTable)" style="display: none;">
         <div style="display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 1.4rem;">🛒</span>
@@ -129,7 +125,6 @@
         <div style="font-size: 1.1rem; background: rgba(0,0,0,0.15); padding: 5px 10px; border-radius: 8px;" id="barTotalText">$0</div>
     </div>
 
-    <!-- MODAL DE PRODUCTO -->
     <div class="modal" id="customModal">
         <div class="modal-content">
             <h3 id="modalItemName"></h3>
@@ -159,30 +154,27 @@
         </div>
     </div>
 
-    <!-- MODAL DE CARRITO -->
     <div class="modal" id="cartModal">
         <div class="modal-content">
             <h3 id="cartModalTitle">Pedido</h3>
             <div id="cartItemsList" style="margin: 15px 0;"></div>
             <div style="font-weight:bold; font-size:1.2rem; text-align:right; margin-bottom:20px;">Total: <span id="cartTotal">$0</span></div>
-            <button style="width:100%; padding:12px; background:#25d366; color:white; border:none; border-radius:8px; font-weight:bold; margin-bottom:10px" onclick="enviarWhatsAppValidado()">Enviar por WhatsApp 📲</button>
-            <button style="width:100%; padding:10px; background:#333; color:white; border:none; border-radius:8px; font-weight:bold; margin-bottom:10px" onclick="imprimirTicketActual()">🖨️ Imprimir Ticket</button>
-            <button style="width:100%; padding:10px; background:#f44336; color:white; border:none; border-radius:8px;" onclick="limpiarCarritoActual()">🗑️ Limpiar este pedido</button>
-            <button style="width:100%; padding:10px; background:none; border:none; color:#666; margin-top:10px" onclick="document.getElementById('cartModal').style.display='none'">Seguir comprando</button>
+            
+            <!-- BOTÓN PRINCIPAL DE ENVÍO DIRECTO A COCINA (NUBE) -->
+            <button style="width:100%; padding:14px; background:#d9534f; color:white; border:none; border-radius:8px; font-weight:bold; font-size:1rem; margin-bottom:10px; cursor:pointer;" onclick="enviarPedidoCocinaValidado()">🚀 Enviar Pedido a Cocina</button>
+            
+            <button style="width:100%; padding:10px; background:#333; color:white; border:none; border-radius:8px; font-weight:bold; margin-bottom:10px; cursor:pointer;" onclick="imprimirTicketActual()">🖨️ Imprimir Ticket</button>
+            <button style="width:100%; padding:10px; background:#f44336; color:white; border:none; border-radius:8px; cursor:pointer;" onclick="limpiarCarritoActual()">🗑️ Limpiar este pedido</button>
+            <button style="width:100%; padding:10px; background:none; border:none; color:#666; margin-top:10px; cursor:pointer;" onclick="document.getElementById('cartModal').style.display='none'">Seguir comprando</button>
         </div>
     </div>
 
-    <!-- TICKET OCULTO PARA IMPRESIÓN TÉRMICA -->
     <div id="ticket-imprimible"></div>
 
     <script>
         const PIN_ADMIN = "1234"; 
-
-        // 📍 COORDENADAS FIJAS DEL RESTAURANTE
         const REST_LAT = 19.6728265; 
         const REST_LON = -99.2188080; 
-
-        // 🔗 URL DE GOOGLE APPS SCRIPT PARA ENVIAR VENTAS A LA NUBE
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7bgZCjfF2uQyonqh6HRuhEiuyge09Rf7fdRgCUUyVDd40ZYJP_eywYgTBFbULeWY/exec";
 
         let tapCounter = 0;
@@ -483,7 +475,7 @@
             }
         }
 
-        function enviarWhatsAppValidado() {
+        function enviarPedidoCocinaValidado() {
             let currentCart = carts[currentCartLocation] || {};
             if(Object.keys(currentCart).length === 0) return alert("Este pedido está vacío");
 
@@ -492,7 +484,10 @@
                 return;
             }
 
-            alert("Verificando que te encuentres en el restaurante...");
+            let btnEnviar = event.target;
+            let textoOriginal = btnEnviar.innerText;
+            btnEnviar.innerText = "⏳ Verificando ubicación y enviando...";
+            btnEnviar.disabled = true;
 
             navigator.geolocation.getCurrentPosition(position => {
                 let userLat = position.coords.latitude;
@@ -501,14 +496,18 @@
 
                 if (distancia > 150) {
                     alert("Lo sentimos, estás fuera del restaurante (" + Math.round(distancia) + " mts). Este menú solo permite enviar pedidos estando en el establecimiento.");
+                    btnEnviar.innerText = textoOriginal;
+                    btnEnviar.disabled = false;
                     return;
                 }
 
-                ejecutarEnvioWhatsApp();
+                ejecutarEnvioNube(btnEnviar, textoOriginal);
             }, error => {
                 console.error(error);
-                alert("No se pudo obtener tu ubicación. Por favor asegúrate de permitir el acceso al GPS en la configuración de tu navegador (Safari/Chrome) para enviar el pedido.");
-            }, { timeout: 12000, enableHighAccuracy: true, maximumAge: 0 });
+                alert("No se pudo obtener tu ubicación. Por favor asegúrate de permitir el acceso al GPS en los ajustes de tu navegador.");
+                btnEnviar.innerText = textoOriginal;
+                btnEnviar.disabled = false;
+            }, { timeout: 10000, enableHighAccuracy: true, maximumAge: 0 });
         }
 
         function calcularDistancia(lat1, lon1, lat2, lon2) {
@@ -522,23 +521,22 @@
             return R * c;
         }
 
-        function ejecutarEnvioWhatsApp() {
+        function ejecutarEnvioNube(btnEnviar, textoOriginal) {
             let currentCart = carts[currentCartLocation] || {};
-            let total = 0, msg = `Pedido: ${currentCartLocation}%0A`;
+            let total = 0;
             let resumenProductos = [];
             
             for(let k in currentCart) { 
                 let item = currentCart[k];
-                msg += `• ${item.qty}x ${item.name} ${item.options.length > 0 ? `(${item.options.join(' + ')})` : ''} ${item.notes ? `[${item.notes}]` : ''}%0A`;
                 total += item.price * item.qty;
-                resumenProductos.push(`${item.qty}x ${item.name}`);
+                resumenProductos.push(`${item.qty}x ${item.name} ${item.options.length > 0 ? '('+item.options.join(', ')+')' : ''} ${item.notes ? '['+item.notes+']' : ''}`);
             }
-            msg += `%0ATotal: $${total}`;
             
             let fechaActual = new Date().toLocaleDateString();
             let horaActual = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            let resumenTexto = resumenProductos.join(', ');
+            let resumenTexto = resumenProductos.join(' | ');
 
+            // ENVÍO AUTOMÁTICO A GOOGLE SHEETS
             if (GOOGLE_SCRIPT_URL) {
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
@@ -554,6 +552,7 @@
                 }).catch(err => console.error("Error enviando a Sheets:", err));
             }
 
+            // REGISTRO LOCAL
             let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
             history.push({
                 table: currentCartLocation,
@@ -566,9 +565,12 @@
             carts[currentCartLocation] = {};
             saveCarts();
             updateBottomButtons();
-            document.getElementById('cartModal').style.display = 'none';
             
-            window.open(`https://wa.me/5215549354467?text=${msg}`, '_blank');
+            document.getElementById('cartModal').style.display = 'none';
+            btnEnviar.innerText = textoOriginal;
+            btnEnviar.disabled = false;
+
+            alert("✅ ¡Pedido enviado a cocina con éxito! En breve comenzaremos a prepararlo.");
         }
 
         function imprimirTicketActual() {
