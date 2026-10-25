@@ -576,7 +576,7 @@
             alert("✅ ¡Pedido enviado a cocina! Puedes seguir agregando más platillos si lo deseas.");
         }
 
-        // --- PANTALLA DE PAGOS Y CIERRE DE MESA ---
+        // --- PANTALLA DE PAGOS Y CIERRE DE MESA (CORREGIDO ORDEN DE EJECUCIÓN) ---
         function abrirPantallaPago() {
             let currentCart = carts[currentCartLocation] || {};
             subtotalActual = Object.values(currentCart).reduce((s, i) => s + (i.price * i.qty), 0);
@@ -586,8 +586,12 @@
             document.getElementById('cartModal').style.display = 'none';
             document.getElementById('paySubtotal').innerText = '$' + subtotalActual;
 
-            actualizarTotalFinal();
+            // 1. Primero cargamos el método por defecto (Efectivo) para que se renderice el input en el DOM
             seleccionarMetodo('Efectivo');
+            // 2. Después actualizamos los totales y cálculos de propina/cambio de forma segura
+            actualizarTotalFinal();
+            
+            // 3. Finalmente mostramos el modal de pago
             document.getElementById('paymentModal').style.display = 'flex';
         }
 
@@ -641,18 +645,25 @@
         }
 
         function actualizarTotalFinal() {
-            let tipPercent = parseInt(document.getElementById('tipSelect').value);
+            let tipSelect = document.getElementById('tipSelect');
+            if(!tipSelect) return;
+            let tipPercent = parseInt(tipSelect.value);
             let tipAmount = Math.round(subtotalActual * (tipPercent / 100));
             let totalFinal = subtotalActual + tipAmount;
             
-            document.getElementById('payTotalFinal').innerText = '$' + totalFinal;
+            let payTotalFinal = document.getElementById('payTotalFinal');
+            if(payTotalFinal) payTotalFinal.innerText = '$' + totalFinal;
             if(metodoPagoActual === 'Efectivo') calcularCambio();
         }
 
         function calcularCambio() {
-            let tipPercent = parseInt(document.getElementById('tipSelect').value);
+            let tipSelect = document.getElementById('tipSelect');
+            let cashInput = document.getElementById('cashInput');
+            if(!tipSelect || !cashInput) return;
+
+            let tipPercent = parseInt(tipSelect.value);
             let totalFinal = subtotalActual + Math.round(subtotalActual * (tipPercent / 100));
-            let pagoCliente = parseFloat(document.getElementById('cashInput').value) || 0;
+            let pagoCliente = parseFloat(cashInput.value) || 0;
             let cambio = pagoCliente - totalFinal;
 
             let changeEl = document.getElementById('changeText');
