@@ -695,7 +695,7 @@
             // LA COLUMNA E (RESUMEN) QUEDA LIMPIA SOLO CON LA COMANDA:
             let resumenTexto = resumenProductos.join(' | ');
             
-            // EL MÉTODO DE PAGO SE INTEGRA EN LA COLUMNA C (MESA):
+            // AQUÍ ESTABA EL DETALLE: Ahora inyecta correctamente la variable 'metodoPagoActual' en la Columna C:
             let mesaInfo = currentCartLocation + ` [CERRADA] - ${metodoPagoActual}`;
 
             if (GOOGLE_SCRIPT_URL) {
