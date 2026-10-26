@@ -151,7 +151,7 @@
             
             <div style="font-weight:bold; font-size:1.1rem; text-align:right; margin-bottom:12px;">Subtotal: <span id="cartSubtotal">$0</span></div>
             
-            <button style="width:100%; padding:12px; background:#d9534f; color:white; border:none; border-radius:8px; font-weight:bold; font-size:0.95rem; margin-bottom:12px; cursor:pointer;" onclick="enviarPedidoCocinaValidado()">🚀 Enviar este pedido a Cocina</button>
+            <button id="btnEnviarCocina" style="width:100%; padding:12px; background:#d9534f; color:white; border:none; border-radius:8px; font-weight:bold; font-size:0.95rem; margin-bottom:12px; cursor:pointer;" onclick="enviarPedidoCocinaValidado(this)">🚀 Enviar este pedido a Cocina</button>
             
             <button style="width:100%; padding:14px; background:#25d366; color:white; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer;" onclick="abrirPantallaPago()">💳 Culminar Visita y Pagar Cuenta</button>
             
@@ -245,4 +245,29 @@
             { id: 6, name: "Pambazo", category: "Antojitos", price: 35, options: ["Sin papa", "Papa con chorizo", "Pollo", "Carne", "Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, isMulti: true },
             { id: 7, name: "Tostada", category: "Antojitos", price: 30, options: ["Pollo", "Res", "Pata"], img: "tostada.jpg", hasTakeout: false, isMulti: false },
             { id: 8, name: "Agua de Jamaica", category: "Bebidas", price: 40, options: ["Litro ($40)", "Medio litro ($20)"], img: "jamaica.jpg", hasTakeout: false, isMulti: false },
-            { id: 9, name: "Coca
+            { id: 9, name: "Coca-Cola", category: "Bebidas", price: 30, options: [], img: "cocacola.jpg", hasTakeout: false, isMulti: false },
+            { id: 10, name: "Jarritos", category: "Bebidas", price: 30, options: ["Piña", "Mandarina", "Limón", "Uva", "Tamarindo", "Tutifruti"], img: "jarritos.jpg", hasTakeout: false, isMulti: false },
+            { id: 11, name: "Boing", category: "Bebidas", price: 30, options: ["Mango", "Manzana", "Guayaba"], img: "boing.jpg", hasTakeout: false, isMulti: false },
+            { id: 12, name: "Café", category: "Bebidas", price: 20, options: [], img: "cafe.jpg", hasTakeout: false, isMulti: false }
+        ];
+
+        let carts = JSON.parse(localStorage.getItem('cartsData')) || { "Mesa 1": {}, "Mesa 2": {}, "Mesa 3": {}, "Mesa 4": {}, "Para llevar": {} };
+        let activeTable = "Mesa 1";
+        let currentCartLocation = "Mesa 1";
+        let selectedSize = null;
+        let selectedGorditaBase = null;
+        let selectedPambazoStyle = "Normal";
+        let selectedOptions = []; 
+        let currentItem = null;
+
+        function saveCarts() {
+            localStorage.setItem('cartsData', JSON.stringify(carts));
+        }
+
+        function renderMenu() {
+            const menuContainer = document.getElementById('menu-list');
+            if (menuContainer) {
+                menuContainer.innerHTML = menu.map(item => `
+                    <div class="menu-item" onclick="abrirModal(${item.id})">
+                        <div style="display:flex; align-items:center; gap:10px">
+                            <img src="${item.img}" class="menu-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'75
