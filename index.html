@@ -40,7 +40,7 @@
         .bottom-bar-single:active { transform: translateX(-50%) scale(0.98); }
 
         .pay-method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
-        .pay-btn { padding: 10px 8px; background: #f1f1f1; border: 2px solid #ddd; border-radius: 8px; font-weight: bold; font-size: 0.75rem; cursor: pointer; text-align: center; color: #333; transition: all 0.2s; }
+        .pay-btn { padding: 9px 6px; background: #f1f1f1; border: 2px solid #ddd; border-radius: 8px; font-weight: bold; font-size: 0.7rem; cursor: pointer; text-align: center; color: #333; transition: all 0.2s; }
         .pay-btn.active { background: #d9534f; color: white; border-color: #b52b27; }
 
         .bank-card { background: #f9f9f9; padding: 10px; border-radius: 8px; margin-top: 8px; border: 1px solid #ddd; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; }
@@ -170,8 +170,8 @@
                 <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
                     <label style="font-size:0.85rem; font-weight:bold; color:#333;">Propina voluntaria:</label>
                     <select id="tipSelect" onchange="actualizarTotalFinal()" style="padding:6px; border-radius:6px; border:1px solid #ccc; font-weight:bold;">
-                        <option value="0">$0 (Sin propina)</option>
-                        <option value="5" selected>5%</option>
+                        <option value="0" selected>$0 (Sin propina)</option>
+                        <option value="5">5%</option>
                         <option value="10">10%</option>
                         <option value="15">15%</option>
                         <option value="20">20%</option>
@@ -185,14 +185,15 @@
             
             <div class="pay-method-grid">
                 <button type="button" class="pay-btn active" id="btnEfectivo" onclick="seleccionarMetodo('Efectivo')">💵 Efectivo</button>
-                <button type="button" class="pay-btn" id="btnTransfer" onclick="seleccionarMetodo('Transferencia Manual')">🏦 Transferencia Manual</button>
+                <button type="button" class="pay-btn" id="btnBBVA" onclick="seleccionarMetodo('Transferencia - BBVA')">🏦 BBVA</button>
+                <button type="button" class="pay-btn" id="btnNu" onclick="seleccionarMetodo('Transferencia - Nu')">🏦 Nu México</button>
+                <button type="button" class="pay-btn" id="btnAztecaT" onclick="seleccionarMetodo('Transferencia - Banco Azteca')">🏦 Azteca (Transf.)</button>
                 <button type="button" class="pay-btn" id="btnCodi" onclick="seleccionarMetodo('CoDi')">📱 CoDi®</button>
-                <button type="button" class="pay-btn" id="btnAzteca" onclick="seleccionarMetodo('Banco Azteca')">🟢 Banco Azteca</button>
+                <button type="button" class="pay-btn" id="btnAztecaQR" onclick="seleccionarMetodo('Banco Azteca (QR)')">🟢 Azteca (QR)</button>
             </div>
 
             <div id="paymentDetailsContainer" style="margin-bottom:12px;"></div>
 
-            <!-- Input de cámara para escaneo -->
             <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;" onchange="procesarFotoEscaneada()">
 
             <button style="width:100%; padding:14px; background:#d9534f; color:white; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer; margin-bottom:8px;" onclick="confirmarPagoYTerminarVisita()">✅ Confirmar Pago y Cerrar Mesa</button>
@@ -561,35 +562,6 @@
         }
 
         function ejecutarEnvioCocina(btnEnviar, textoOriginal) {
-            let currentCart = carts[currentCartLocation] || {};
-            let total = 0;
-            let resumenProductos = [];
-            
-            for(let k in currentCart) { 
-                let item = currentCart[k];
-                total += item.price * item.qty;
-                resumenProductos.push(`${item.qty}x ${item.name} ${item.options.length > 0 ? '('+item.options.join(', ')+')' : ''}`);
-            }
-            
-            let fechaActual = new Date().toLocaleDateString();
-            let horaActual = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            let resumenTexto = resumenProductos.join(' | ');
-
-            if (GOOGLE_SCRIPT_URL) {
-                fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        fecha: fechaActual,
-                        hora: horaActual,
-                        mesa: currentCartLocation + " (Comanda)",
-                        total: total,
-                        resumen: resumenTexto
-                    })
-                }).catch(err => console.error("Error enviando a Sheets:", err));
-            }
-
             document.getElementById('cartModal').style.display = 'none';
             btnEnviar.innerText = textoOriginal;
             btnEnviar.disabled = false;
@@ -616,9 +588,11 @@
             metodoPagoActual = metodo;
             
             document.getElementById('btnEfectivo').classList.toggle('active', metodo === 'Efectivo');
-            document.getElementById('btnTransfer').classList.toggle('active', metodo === 'Transferencia Manual');
+            document.getElementById('btnBBVA').classList.toggle('active', metodo === 'Transferencia - BBVA');
+            document.getElementById('btnNu').classList.toggle('active', metodo === 'Transferencia - Nu');
+            document.getElementById('btnAztecaT').classList.toggle('active', metodo === 'Transferencia - Banco Azteca');
             document.getElementById('btnCodi').classList.toggle('active', metodo === 'CoDi');
-            document.getElementById('btnAzteca').classList.toggle('active', metodo === 'Banco Azteca');
+            document.getElementById('btnAztecaQR').classList.toggle('active', metodo === 'Banco Azteca (QR)');
 
             let container = document.getElementById('paymentDetailsContainer');
 
@@ -627,20 +601,15 @@
                     <label style="font-size:0.8rem; color:#555;">¿Con cuánto paga el cliente?</label>
                     <input type="number" id="cashInput" placeholder="$ Ej. 500" oninput="calcularCambio()" style="width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:6px;">
                     <div style="font-size:0.85rem; font-weight:bold; margin-top:6px; color:#333;">Su cambio: <span id="changeText" style="color:green;">$0</span></div>`;
-            } else if(metodo === 'Transferencia Manual') {
+            } else if(metodo.includes('Transferencia')) {
+                let bancoNombre = metodo.replace('Transferencia - ', '');
+                let clabeVal = bancoNombre === 'BBVA' ? '0123 2001 5421 3067 03' : (bancoNombre === 'Nu' ? '6381 8001 0114 1650 45' : '1271 8002 1376 3998 90');
+                let clabeClean = bancoNombre === 'BBVA' ? '012320015421306703' : (bancoNombre === 'Nu' ? '638180010114165045' : '127180021376399890');
                 container.innerHTML = `
                     <p style="font-size:0.75rem; color:#666; margin-bottom:6px;">Beneficiaria: <b>ARACELI PEREZ GARCIA</b></p>
                     <div class="bank-card">
-                        <div><b>Banco Azteca</b><br><small>1271 8002 1376 3998 90</small></div>
-                        <button class="copy-btn" onclick="copiarClabe('127180021376399890')">Copiar</button>
-                    </div>
-                    <div class="bank-card">
-                        <div><b>BBVA</b><br><small>0123 2001 5421 3067 03</small></div>
-                        <button class="copy-btn" onclick="copiarClabe('012320015421306703')">Copiar</button>
-                    </div>
-                    <div class="bank-card">
-                        <div><b>Nu Mexico</b><br><small>6381 8001 0114 1650 45</small></div>
-                        <button class="copy-btn" onclick="copiarClabe('638180010114165045')">Copiar</button>
+                        <div><b>${bancoNombre}</b><br><small>${clabeVal}</small></div>
+                        <button class="copy-btn" onclick="copiarClabe('${clabeClean}')">Copiar</button>
                     </div>`;
             } else if(metodo === 'CoDi') {
                 container.innerHTML = `
@@ -649,11 +618,11 @@
                         <p style="color:#444; margin-bottom:10px;">Abre tu cámara para escanear el código QR impreso en la mesa:</p>
                         <button onclick="dispararCamara()" style="background:#d9534f; color:white; border:none; padding:10px 15px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; font-size:0.9rem;">📷 Abrir Cámara para Escanear QR</button>
                     </div>`;
-            } else if(metodo === 'Banco Azteca') {
+            } else if(metodo === 'Banco Azteca (QR)') {
                 container.innerHTML = `
                     <div style="background:#f4f9f4; padding:12px; border-radius:8px; border:1px solid #25d366; font-size:0.85rem; text-align:center;">
-                        <p style="font-weight:bold; color:#2e7d32; font-size:0.9rem; margin-bottom:6px;">🟢 Banco Azteca</p>
-                        <p style="color:#444; margin-bottom:10px;">Abre tu cámara para escanear el código QR de Banco Azteca o usa los datos:</p>
+                        <p style="font-weight:bold; color:#2e7d32; font-size:0.9rem; margin-bottom:6px;">🟢 Banco Azteca (QR)</p>
+                        <p style="color:#444; margin-bottom:10px;">Abre tu cámara para escanear el código QR o usa los datos:</p>
                         <button onclick="dispararCamara()" style="background:#2e7d32; color:white; border:none; padding:10px 15px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; font-size:0.9rem; margin-bottom:8px;">📷 Abrir Cámara para Escanear QR</button>
                         <p style="font-size:0.75rem; color:#333; margin-top:4px;">Beneficiaria: <b>ARACELI PEREZ GARCIA</b></p>
                         <p style="font-size:0.75rem; color:#333;">Teléfono: <b>(55) 4935 4467</b></p>
@@ -715,7 +684,14 @@
 
             let fechaActual = new Date().toLocaleDateString();
             let horaActual = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            let resumenFinal = `PAGADO (${metodoPagoActual}) - Subtotal: $${subtotalActual} + Propina (${tipPercent}%): $${tipAmount}`;
+            
+            let currentCart = carts[currentCartLocation] || {};
+            let resumenProductos = [];
+            for(let k in currentCart) { 
+                let item = currentCart[k];
+                resumenProductos.push(`${item.qty}x ${item.name} ${item.options.length > 0 ? '('+item.options.join(', ')+')' : ''}`);
+            }
+            let resumenTexto = resumenProductos.join(' | ');
 
             if (GOOGLE_SCRIPT_URL) {
                 fetch(GOOGLE_SCRIPT_URL, {
@@ -727,7 +703,8 @@
                         hora: horaActual,
                         mesa: currentCartLocation + " [CERRADA]",
                         total: totalFinal,
-                        resumen: resumenFinal
+                        resumen: resumenTexto,
+                        pago: metodoPagoActual
                     })
                 }).catch(err => console.error("Error enviando a Sheets:", err));
             }
@@ -737,7 +714,7 @@
                 table: currentCartLocation + " (Pagado)",
                 time: horaActual,
                 total: totalFinal,
-                summary: resumenFinal
+                summary: `PAGADO (${metodoPagoActual}) - Subtotal: $${subtotalActual} + Propina (${tipPercent}%): $${tipAmount}`
             });
             localStorage.setItem('salesHistory', JSON.stringify(history));
 
@@ -746,7 +723,7 @@
             updateBottomButtons();
 
             document.getElementById('paymentModal').style.display = 'none';
-            alert("🎉 ¡Mesa cerrada y pagada con éxito! Cuenta registrada en el sistema.");
+            alert("🎉 ¡Mesa cerrada y pagada con éxito! Cuenta registrada en Sheets con método: " + metodoPagoActual);
         }
 
         function cargarHistorialVentas() {
