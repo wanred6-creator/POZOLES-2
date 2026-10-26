@@ -169,13 +169,17 @@
                 
                 <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
                     <label style="font-size:0.85rem; font-weight:bold; color:#333;">Propina voluntaria:</label>
-                    <select id="tipSelect" onchange="actualizarTotalFinal()" style="padding:6px; border-radius:6px; border:1px solid #ccc; font-weight:bold;">
+                    <select id="tipSelect" onchange="verificarTipoPropina()" style="padding:6px; border-radius:6px; border:1px solid #ccc; font-weight:bold;">
                         <option value="0" selected>$0 (Sin propina)</option>
                         <option value="5">5%</option>
                         <option value="10">10%</option>
-                        <option value="15">15%</option>
-                        <option value="20">20%</option>
+                        <option value="custom">Personalizado ($)</option>
                     </select>
+                </div>
+
+                <div id="customTipContainer" style="margin-top:8px; display:none; display:flex; justify-content:space-between; align-items:center;">
+                    <label style="font-size:0.8rem; color:#555;">Monto de propina ($):</label>
+                    <input type="number" id="customTipInput" placeholder="Ej. 25" oninput="actualizarTotalFinal()" style="width:110px; padding:6px; border:1px solid #ccc; border-radius:6px; text-align:right; font-weight:bold;">
                 </div>
 
                 <div style="font-weight:bold; font-size:1.3rem; color:#d9534f; margin-top:10px;">TOTAL A PAGAR: <span id="payTotalFinal">$0</span></div>
@@ -187,7 +191,7 @@
                 <button type="button" class="pay-btn active" id="btnEfectivo" onclick="seleccionarMetodo('Efectivo')">💵 Efectivo</button>
                 <button type="button" class="pay-btn" id="btnBBVA" onclick="seleccionarMetodo('Transferencia - BBVA')">🏦 BBVA<br><span style="font-size:0.55rem; font-weight:normal; opacity:0.8;">(toca aqui para mostrar cuenta clabe)</span></button>
                 <button type="button" class="pay-btn" id="btnNu" onclick="seleccionarMetodo('Transferencia - Nu')">🏦 Nu México<br><span style="font-size:0.55rem; font-weight:normal; opacity:0.8;">(toca aqui para mostrar cuenta clabe)</span></button>
-                <button type="button" class="pay-btn" id="btnAztecaT" onclick="seleccionarMetodo('Transferencia - Banco Azteca')">🏦 Azteca (Transf.)</button>
+                <button type="button" class="pay-btn" id="btnAztecaT" onclick="seleccionarMetodo('Transferencia - Banco Azteca')">🏦 Banco Azteca<br><span style="font-size:0.55rem; font-weight:normal; opacity:0.8;">(toca aqui para mostrar cuenta clabe)</span></button>
                 <button type="button" class="pay-btn" id="btnCodi" onclick="seleccionarMetodo('CoDi')">📱 CoDi QR</button>
                 <button type="button" class="pay-btn" id="btnAztecaQR" onclick="seleccionarMetodo('Banco Azteca (QR)')">🟢 Azteca (QR)</button>
             </div>
@@ -538,263 +542,4 @@
                 if (distancia > 150) {
                     alert("Lo sentimos, estás fuera del restaurante (" + Math.round(distancia) + " mts).");
                     btn.innerHTML = textoOriginal;
-                    btn.disabled = false;
-                    return;
-                }
-
-                ejecutarEnvioCocina(btn, textoOriginal);
-            }, error => {
-                alert("No se pudo obtener tu ubicación. Revisa los permisos del navegador.");
-                btn.innerHTML = textoOriginal;
-                btn.disabled = false;
-            }, { timeout: 10000, enableHighAccuracy: true, maximumAge: 0 });
-        }
-
-        function calcularDistancia(lat1, lon1, lat2, lon2) {
-            let R = 6371e3;
-            let dLat = (lat2 - lat1) * Math.PI / 180;
-            let dLon = (lon2 - lon1) * Math.PI / 180;
-            let a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                    Math.sin(dLon/2) * Math.sin(dLon/2);
-            let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
-
-        function ejecutarEnvioCocina(btn, textoOriginal) {
-            document.getElementById('cartModal').style.display = 'none';
-            btn.innerHTML = textoOriginal;
-            btn.disabled = false;
-
-            alert("✅ ¡Pedido enviado a cocina! Puedes seguir agregando más platillos si lo deseas.");
-        }
-
-        function abrirPantallaPago() {
-            let currentCart = carts[currentCartLocation] || {};
-            subtotalActual = Object.values(currentCart).reduce((s, i) => s + (i.price * i.qty), 0);
-            
-            if(subtotalActual === 0) return alert("La cuenta está en ceros, no hay nada que pagar.");
-
-            document.getElementById('cartModal').style.display = 'none';
-            document.getElementById('paySubtotal').innerText = '$' + subtotalActual;
-
-            seleccionarMetodo('Efectivo');
-            actualizarTotalFinal();
-            
-            document.getElementById('paymentModal').style.display = 'flex';
-        }
-
-        function seleccionarMetodo(metodo) {
-            metodoPagoActual = metodo;
-            
-            document.getElementById('btnEfectivo').classList.toggle('active', metodo === 'Efectivo');
-            document.getElementById('btnBBVA').classList.toggle('active', metodo === 'Transferencia - BBVA');
-            document.getElementById('btnNu').classList.toggle('active', metodo === 'Transferencia - Nu');
-            document.getElementById('btnAztecaT').classList.toggle('active', metodo === 'Transferencia - Banco Azteca');
-            document.getElementById('btnCodi').classList.toggle('active', metodo === 'CoDi');
-            document.getElementById('btnAztecaQR').classList.toggle('active', metodo === 'Banco Azteca (QR)');
-
-            let container = document.getElementById('paymentDetailsContainer');
-
-            if(metodo === 'Efectivo') {
-                container.innerHTML = `
-                    <label style="font-size:0.8rem; color:#555;">¿Con cuánto paga el cliente?</label>
-                    <input type="number" id="cashInput" placeholder="$ Ej. 500" oninput="calcularCambio()" style="width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:6px;">
-                    <div style="font-size:0.85rem; font-weight:bold; margin-top:6px; color:#333;">Su cambio: <span id="changeText" style="color:green;">$0</span></div>`;
-            } else if(metodo.includes('Transferencia')) {
-                let bancoNombre = metodo.replace('Transferencia - ', '');
-                let clabeVal = bancoNombre === 'BBVA' ? '0123 2001 5421 3067 03' : (bancoNombre === 'Nu' ? '6381 8001 0114 1650 45' : '1271 8002 1376 3998 90');
-                let clabeClean = bancoNombre === 'BBVA' ? '012320015421306703' : (bancoNombre === 'Nu' ? '638180010114165045' : '127180021376399890');
-                container.innerHTML = `
-                    <p style="font-size:0.75rem; color:#666; margin-bottom:6px;">Beneficiaria: <b>ARACELI PEREZ GARCIA</b></p>
-                    <div class="bank-card">
-                        <div><b>${bancoNombre}</b><br><small>${clabeVal}</small></div>
-                        <button class="copy-btn" onclick="copiarClabe('${clabeClean}')">Copiar</button>
-                    </div>`;
-            } else if(metodo === 'CoDi') {
-                container.innerHTML = `
-                    <div style="background:#fdf2f2; padding:12px; border-radius:8px; border:1px solid #d9534f; font-size:0.85rem; text-align:center;">
-                        <p style="font-weight:bold; color:#d9534f; font-size:0.9rem; margin-bottom:6px;">📲 Paga con CoDi®</p>
-                        <p style="color:#444; margin-bottom:10px;">Abre tu cámara para escanear el código QR impreso en la mesa:</p>
-                        <button onclick="dispararCamara()" style="background:#d9534f; color:white; border:none; padding:10px 15px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; font-size:0.9rem;">📷 Abrir Cámara para Escanear QR</button>
-                    </div>`;
-            } else if(metodo === 'Banco Azteca (QR)') {
-                container.innerHTML = `
-                    <div style="background:#f4f9f4; padding:12px; border-radius:8px; border:1px solid #25d366; font-size:0.85rem; text-align:center;">
-                        <p style="font-weight:bold; color:#2e7d32; font-size:0.9rem; margin-bottom:6px;">🟢 Banco Azteca (QR)</p>
-                        <p style="color:#444; margin-bottom:10px;">Abre tu cámara para escanear el código QR o usa los datos:</p>
-                        <button onclick="dispararCamara()" style="background:#2e7d32; color:white; border:none; padding:10px 15px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; font-size:0.9rem; margin-bottom:8px;">📷 Abrir Cámara para Escanear QR</button>
-                        <p style="font-size:0.75rem; color:#333; margin-top:4px;">Beneficiaria: <b>ARACELI PEREZ GARCIA</b></p>
-                        <p style="font-size:0.75rem; color:#333;">Teléfono: <b>(55) 4935 4467</b></p>
-                    </div>`;
-            }
-        }
-
-        function dispararCamara() {
-            document.getElementById('cameraInput').click();
-        }
-
-        function procesarFotoEscaneada() {
-            let input = document.getElementById('cameraInput');
-            if (input.files && input.files.length > 0) {
-                alert("✅ ¡Código QR escaneado con éxito! Ya puedes confirmar el pago.");
-            }
-        }
-
-        function actualizarTotalFinal() {
-            let tipSelect = document.getElementById('tipSelect');
-            if(!tipSelect) return;
-            let tipPercent = parseInt(tipSelect.value);
-            let tipAmount = Math.round(subtotalActual * (tipPercent / 100));
-            let totalFinal = subtotalActual + tipAmount;
-            
-            let payTotalFinal = document.getElementById('payTotalFinal');
-            if(payTotalFinal) payTotalFinal.innerText = '$' + totalFinal;
-            if(metodoPagoActual === 'Efectivo') calcularCambio();
-        }
-
-        function calcularCambio() {
-            let tipSelect = document.getElementById('tipSelect');
-            let cashInput = document.getElementById('cashInput');
-            if(!tipSelect || !cashInput) return;
-
-            let tipPercent = parseInt(tipSelect.value);
-            let totalFinal = subtotalActual + Math.round(subtotalActual * (tipPercent / 100));
-            let pagoCliente = parseFloat(cashInput.value) || 0;
-            let cambio = pagoCliente - totalFinal;
-
-            let changeEl = document.getElementById('changeText');
-            if(changeEl) {
-                changeEl.innerText = cambio >= 0 ? '$' + cambio : 'Faltan $' + Math.abs(cambio);
-            }
-        }
-
-        function copiarClabe(clabe) {
-            navigator.clipboard.writeText(clabe).then(() => {
-                alert("¡CLABE copiada al portapapeles: " + clabe + "!");
-            }).catch(err => {
-                alert("CLABE: " + clabe);
-            });
-        }
-
-        function confirmarPagoYTerminarVisita() {
-            let tipPercent = parseInt(document.getElementById('tipSelect').value);
-            let tipAmount = Math.round(subtotalActual * (tipPercent / 100));
-            let totalFinal = subtotalActual + tipAmount;
-
-            let fechaActual = new Date().toLocaleDateString();
-            let horaActual = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            
-            let currentCart = carts[currentCartLocation] || {};
-            let resumenProductos = [];
-            for(let k in currentCart) { 
-                let item = currentCart[k];
-                resumenProductos.push(`${item.qty}x ${item.name} ${item.options.length > 0 ? '('+item.options.join(', ')+')' : ''}`);
-            }
-            
-            let resumenTexto = resumenProductos.join(' | ');
-            
-            let mesaInfo = currentCartLocation + ` [CERRADA] - ${metodoPagoActual}`;
-            if (tipPercent > 0) {
-                mesaInfo += ` (Propina: ${tipPercent}% / +$${tipAmount})`;
-            }
-
-            if (GOOGLE_SCRIPT_URL) {
-                fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        fecha: fechaActual,
-                        hora: horaActual,
-                        mesa: mesaInfo,
-                        total: totalFinal,
-                        resumen: resumenTexto
-                    })
-                }).catch(err => console.error("Error enviando a Sheets:", err));
-            }
-
-            let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
-            history.push({
-                table: mesaInfo,
-                time: horaActual,
-                total: totalFinal,
-                summary: `PAGADO (${metodoPagoActual}) - Subtotal: $${subtotalActual} + Propina (${tipPercent}%): $${tipAmount}`
-            });
-            localStorage.setItem('salesHistory', JSON.stringify(history));
-
-            carts[currentCartLocation] = {};
-            saveCarts();
-            updateBottomButtons();
-
-            document.getElementById('paymentModal').style.display = 'none';
-            alert("🎉 ¡Mesa cerrada y pagada con éxito! Registrado con propina de " + tipPercent + "%");
-        }
-
-        function cargarHistorialVentas() {
-            let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
-            let container = document.getElementById('salesHistoryList');
-            let totalGeneral = 0;
-
-            if (history.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#777; font-size:0.8rem;">No hay ventas registradas hoy.</p>';
-                document.getElementById('totalVentasDia').innerText = '$0';
-                return;
-            }
-
-            container.innerHTML = history.map(h => {
-                totalGeneral += h.total;
-                return `<div class="history-item"><b>[${h.time}] ${h.table}</b> - <span style="color:#25d366; font-weight:bold;">$${h.total}</span><br><span style="color:#555;">${h.summary}</span></div>`;
-            }).join('');
-
-            document.getElementById('totalVentasDia').innerText = '$' + totalGeneral;
-        }
-
-        function limpiarHistorialVentas() {
-            if (confirm("¿Cerrar el día y borrar el historial local?")) {
-                localStorage.removeItem('salesHistory');
-                cargarHistorialVentas();
-                alert("Historial local reseteado.");
-            }
-        }
-
-        function pedirPinYEntrar() {
-            let ingreso = prompt("Ingresa el PIN de administrador:");
-            if (ingreso === PIN_ADMIN) { toggleView(); }
-            else if (ingreso !== null) { alert("PIN incorrecto."); }
-        }
-
-        function toggleView() {
-            const main = document.getElementById('main-view'), stats = document.getElementById('stats-view');
-            main.style.display = (main.style.display === 'none') ? 'block' : 'none';
-            stats.style.display = (stats.style.display === 'none') ? 'block' : 'none';
-            if(stats.style.display === 'block') { cargarConfigGuardada(); cargarHistorialVentas(); }
-        }
-
-        function guardarYGenerarQRs() {
-            let url = document.getElementById('siteUrlInput').value.trim();
-            if(!url) return alert("Ingresa un enlace válido");
-            if(!url.endsWith('/')) url += '/';
-            localStorage.setItem('siteUrl', url);
-            mostrarTodosLosQRs(url);
-            alert("¡QRs actualizados!");
-        }
-
-        function cargarConfigGuardada() {
-            let savedUrl = localStorage.getItem('siteUrl') || window.location.href.split('?')[0];
-            document.getElementById('siteUrlInput').value = savedUrl;
-            mostrarTodosLosQRs(savedUrl);
-        }
-
-        function mostrarTodosLosQRs(baseUrl) {
-            let container = document.getElementById('allQrContainer');
-            let mesas = ["Mesa 1", "Mesa 2", "Mesa 3", "Mesa 4", "Para llevar"];
-            container.innerHTML = mesas.map(m => {
-                let fullUrl = `${baseUrl}?mesa=${encodeURIComponent(m)}`;
-                let qrImg = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(fullUrl)}`;
-                return `<div class="qr-card"><b>🪑 ${m}</b><br><img src="${qrImg}" style="width: 120px; height: 120px; margin-top: 5px; border-radius: 4px;"><br><input type="text" value="${fullUrl}" readonly style="width: 100%; font-size: 0.7rem; padding: 4px; margin-top: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px;" onclick="this.select()"></div>`;
-            }).join('');
-        }
-    </script>
-</body>
-</html>
+                    btn.disabled =
