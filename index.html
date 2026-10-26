@@ -151,7 +151,7 @@
             
             <div style="font-weight:bold; font-size:1.1rem; text-align:right; margin-bottom:12px;">Subtotal: <span id="cartSubtotal">$0</span></div>
             
-            <button id="btnEnviarCocina" style="width:100%; padding:12px; background:#d9534f; color:white; border:none; border-radius:8px; font-weight:bold; font-size:0.95rem; margin-bottom:12px; cursor:pointer;" onclick="enviarPedidoCocinaValidado(this)">🚀 Enviar este pedido a Cocina</button>
+            <button id="btnEnviarCocina" style="width:100%; padding:12px; background:#d9534f; color:white; border:none; border-radius:8px; font-weight:bold; font-size:0.95rem; margin-bottom:12px; cursor:pointer;" onclick="enviarPedidoCocinaValidado()">🚀 Enviar este pedido a Cocina</button>
             
             <button style="width:100%; padding:14px; background:#25d366; color:white; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer;" onclick="abrirPantallaPago()">💳 Culminar Visita y Pagar Cuenta</button>
             
@@ -270,4 +270,531 @@
                 menuContainer.innerHTML = menu.map(item => `
                     <div class="menu-item" onclick="abrirModal(${item.id})">
                         <div style="display:flex; align-items:center; gap:10px">
-                            <img src="${item.img}" class="menu-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'75
+                            <img src="${item.img}" class="menu-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'75\\' height=\\'75\\'><rect width=\\'75\\' height=\\'75\\' fill=\\'%23eee\\'/></svg>'">
+                            <div>
+                                <h3>${item.name}</h3>
+                                <p>${(item.id === 1 || item.id === 2) ? '$100' : (item.sizes ? 'Desde $' + item.sizes[0].price : '$' + item.price + '.00')}</p>
+                            </div>
+                        </div>
+                        <button class="add-btn">Agregar</button>
+                    </div>`).join('');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderMenu();
+            const urlParams = new URLSearchParams(window.location.search);
+            let mesaParam = urlParams.get('mesa');
+            if (mesaParam) {
+                isQrMode = true;
+                activeTable = decodeURIComponent(mesaParam);
+                document.getElementById('tableIndicatorText').innerText = `📍 Estás ordenando desde: ${activeTable}`;
+                document.getElementById('tableTabsContainer').style.display = 'none';
+                document.getElementById('multiTableBar').style.display = 'none';
+                document.getElementById('singleCartBar').style.display = 'flex';
+                document.getElementById('barTableName').innerText = `Cuenta de ${activeTable}`;
+            } else {
+                isQrMode = false;
+                document.getElementById('tableIndicatorText').innerText = `🍽️ Menú General (Mesa seleccionada: ${activeTable})`;
+                document.getElementById('multiTableBar').style.display = 'grid';
+                document.getElementById('singleCartBar').style.display = 'none';
+            }
+            updateBottomButtons();
+        });
+
+        function setActiveTable(table) {
+            activeTable = table;
+            document.querySelectorAll('.table-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.innerText.includes(table));
+            });
+            document.getElementById('tableIndicatorText').innerText = `🍽️ Menú General (Mesa seleccionada: ${activeTable})`;
+        }
+
+        function abrirModal(id) {
+            currentItem = menu.find(m => m.id === id);
+            selectedOptions = [];
+            document.getElementById('modalItemName').innerText = `${currentItem.name} (${activeTable})`;
+            
+            const sizeContainer = document.getElementById('sizeContainer');
+            const sizeOptionsDiv = document.getElementById('sizeOptions');
+            const pambazoStyleContainer = document.getElementById('pambazoStyleContainer');
+            const pambazoStyleOptionsDiv = document.getElementById('pambazoStyleOptions');
+            const meatContainer = document.getElementById('meatContainer');
+
+            sizeContainer.style.display = "none";
+            pambazoStyleContainer.style.display = "none";
+
+            if (currentItem.isGordita) {
+                document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones, ingrediente extra cuesta $5";
+                sizeContainer.style.display = "block";
+                document.getElementById('sizeLabel').innerText = "Tipo de Gordita:";
+                selectedGorditaBase = currentItem.gorditaBases[0];
+                sizeOptionsDiv.innerHTML = currentItem.gorditaBases.map(b => `
+                    <div class="option-pill ${b.name === selectedGorditaBase.name ? 'active' : ''}" onclick="selectGorditaBase('${b.name}', ${b.price}, this)">${b.name} ($${b.price})</div>`).join('');
+                document.getElementById('optionsLabel').innerText = "Ingredientes extra (+$5 c/u):";
+                renderOptions();
+            } else if (currentItem.isPambazo) {
+                document.getElementById('modalInstruction').innerText = "Elige el término y hasta 2 opciones (extra +$10)";
+                pambazoStyleContainer.style.display = "block";
+                selectedPambazoStyle = "Normal";
+                const estilos = ["Normal", "Dorado"];
+                pambazoStyleOptionsDiv.innerHTML = estilos.map(est => `
+                    <div class="option-pill ${est === selectedPambazoStyle ? 'active' : ''}" onclick="selectPambazoStyle('${est}', this)">${est}</div>`).join('');
+                document.getElementById('optionsLabel').innerText = "Opciones:";
+                renderOptions();
+            } else {
+                if (currentItem.isMulti) {
+                    document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (el precio base incluye 1, cada ingrediente extra cuesta $5)";
+                } else {
+                    document.getElementById('modalInstruction').innerText = "";
+                }
+
+                document.getElementById('optionsLabel').innerText = "Opciones:";
+                if (currentItem.sizes) {
+                    sizeContainer.style.display = "block";
+                    document.getElementById('sizeLabel').innerText = "Tamaño:";
+                    selectedSize = currentItem.sizes[1]; 
+                    sizeOptionsDiv.innerHTML = currentItem.sizes.map(s => `
+                        <div class="option-pill ${s.name === selectedSize.name ? 'active' : ''}" onclick="selectSize('${s.name}', ${s.price}, this)">${s.name} ($${s.price})</div>`).join('');
+                } else {
+                    selectedSize = null;
+                }
+                renderOptions();
+            }
+
+            document.getElementById('itemNotes').value = "";
+            document.getElementById('takeoutCheck').checked = false;
+            document.getElementById('takeoutContainer').style.display = currentItem.hasTakeout ? 'block' : 'none';
+            document.getElementById('customModal').style.display = 'flex';
+        }
+
+        function selectSize(name, price, el) {
+            selectedSize = { name, price };
+            document.querySelectorAll('#sizeOptions .option-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function selectGorditaBase(name, price, el) {
+            selectedGorditaBase = { name, price };
+            document.querySelectorAll('#sizeOptions .option-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function selectPambazoStyle(style, el) {
+            selectedPambazoStyle = style;
+            document.querySelectorAll('#pambazoStyleOptions .option-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function renderOptions() {
+            const container = document.getElementById('meatOptions');
+            const meatContainer = document.getElementById('meatContainer');
+            if (currentItem.options.length > 0) {
+                meatContainer.style.display = "block";
+                container.style.display = "flex";
+                container.innerHTML = currentItem.options.map(opt => `
+                    <div class="option-pill" onclick="toggleOption('${opt}', this)">${opt}</div>`).join('');
+            } else { 
+                meatContainer.style.display = "none";
+                container.style.display = "none"; 
+            }
+        }
+
+        function toggleOption(opt, el) {
+            if (currentItem.isMulti || currentItem.isGordita || currentItem.isPambazo) {
+                if (selectedOptions.includes(opt)) {
+                    selectedOptions = selectedOptions.filter(o => o !== opt);
+                    el.classList.remove('active');
+                } else if (selectedOptions.length < 2) {
+                    selectedOptions.push(opt);
+                    el.classList.add('active');
+                }
+            } else {
+                selectedOptions = [opt];
+                document.querySelectorAll('#meatOptions .option-pill').forEach(p => p.classList.remove('active'));
+                el.classList.add('active');
+            }
+        }
+
+        function agregarAlCarrito() {
+            let price = selectedSize ? selectedSize.price : currentItem.price;
+            let finalName = currentItem.name;
+            let takeout = document.getElementById('takeoutCheck').checked;
+            
+            if (currentItem.isGordita) {
+                price = selectedGorditaBase.price + (selectedOptions.length * 5);
+                finalName = `${currentItem.name} (${selectedGorditaBase.name})`;
+            } else if (currentItem.isPambazo) {
+                finalName = `${currentItem.name} (${selectedPambazoStyle})`;
+                if (selectedOptions.length > 1) {
+                    price = currentItem.price + (selectedOptions.length - 1) * 10;
+                } else {
+                    price = currentItem.price;
+                }
+            } else {
+                if (selectedSize) finalName += ` (${selectedSize.name})`;
+                if (currentItem.name === "Agua de Jamaica" && selectedOptions.includes("Medio litro ($20)")) price = 20;
+                
+                if (currentItem.isMulti) {
+                    if (selectedOptions.length > 1) {
+                        price = currentItem.price + (selectedOptions.length - 1) * 5;
+                    } else {
+                        price = currentItem.price;
+                    }
+                }
+            }
+
+            if (takeout) { price += 5; finalName += " (Llevar)"; }
+            
+            const notes = document.getElementById('itemNotes').value;
+            const key = currentItem.id + (selectedSize ? selectedSize.name : '') + (selectedGorditaBase ? selectedGorditaBase.name : '') + selectedPambazoStyle + selectedOptions.join(',') + takeout + notes;
+            
+            if (!carts[activeTable]) carts[activeTable] = {};
+            carts[activeTable][key] = { 
+                name: finalName, 
+                category: currentItem.category,
+                price: price, 
+                options: selectedOptions, 
+                notes: notes, 
+                qty: (carts[activeTable][key]?.qty || 0) + 1 
+            };
+
+            saveCarts();
+            document.getElementById('customModal').style.display = 'none';
+            updateBottomButtons();
+        }
+
+        function updateBottomButtons() {
+            if (isQrMode) {
+                let currentCart = carts[activeTable] || {};
+                let count = Object.values(currentCart).reduce((s, i) => s + i.qty, 0);
+                let total = Object.values(currentCart).reduce((s, i) => s + (i.price * i.qty), 0);
+                
+                document.getElementById('barItemsText').innerText = count === 1 ? '1 producto seleccionado' : `${count} productos seleccionados`;
+                document.getElementById('barTotalText').innerText = `$${total}`;
+            } else {
+                const tables = ["Mesa 1", "Mesa 2", "Mesa 3", "Mesa 4", "Para llevar"];
+                tables.forEach(t => {
+                    let count = Object.values(carts[t] || {}).reduce((s, i) => s + i.qty, 0);
+                    let btnId = t === "Para llevar" ? "btn-Para llevar" : `btn-${t}`;
+                    let label = t === "Para llevar" ? "Llevar" : t.replace("Mesa ", "M");
+                    document.getElementById(btnId).innerText = `${label} (${count})`;
+                });
+            }
+        }
+
+        function abrirCart(location) {
+            currentCartLocation = location;
+            document.getElementById('cartModalTitle').innerText = `Cuenta de ${location}`;
+            let list = document.getElementById('cartItemsList');
+            let total = 0;
+            let currentCart = carts[location] || {};
+
+            list.innerHTML = Object.keys(currentCart).map(k => {
+                total += currentCart[k].price * currentCart[k].qty;
+                return `
+                <div class="cart-row">
+                    <div><b>${currentCart[k].name}</b><br><small>${currentCart[k].options.join(' + ') || ''} ${currentCart[k].notes || ''}</small></div>
+                    <div style="display:flex; align-items:center; gap:5px">
+                        <button class="qty-btn" onclick="ajustarQty('${location}', '${k}', -1)">-</button>
+                        <span>${currentCart[k].qty}</span>
+                        <button class="qty-btn" onclick="ajustarQty('${location}', '${k}', 1)">+</button>
+                    </div>
+                </div>`;
+            }).join('') || '<p style="text-align:center; color:#777;">Sin productos agregados todavía</p>';
+
+            document.getElementById('cartSubtotal').innerText = '$' + total;
+            document.getElementById('cartModal').style.display = 'flex';
+        }
+
+        function ajustarQty(location, key, delta) {
+            if (!carts[location][key]) return;
+            carts[location][key].qty += delta;
+            if(carts[location][key].qty <= 0) delete carts[location][key];
+            saveCarts();
+            updateBottomButtons();
+            abrirCart(location);
+        }
+
+        function enviarPedidoCocinaValidado() {
+            let currentCart = carts[currentCartLocation] || {};
+            if(Object.keys(currentCart).length === 0) return alert("El pedido está vacío");
+
+            if (!navigator.geolocation) {
+                alert("Tu navegador no soporta geolocalización.");
+                return;
+            }
+
+            let btn = document.getElementById('btnEnviarCocina');
+            let textoOriginal = btn.innerHTML;
+            btn.innerHTML = "⏳ procesando...";
+            btn.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(position => {
+                let userLat = position.coords.latitude;
+                let userLon = position.coords.longitude;
+                let distancia = calcularDistancia(REST_LAT, REST_LON, userLat, userLon);
+
+                if (distancia > 150) {
+                    alert("Lo sentimos, estás fuera del restaurante (" + Math.round(distancia) + " mts).");
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                    return;
+                }
+
+                ejecutarEnvioCocina(btn, textoOriginal);
+            }, error => {
+                alert("No se pudo obtener tu ubicación. Revisa los permisos del navegador.");
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            }, { timeout: 10000, enableHighAccuracy: true, maximumAge: 0 });
+        }
+
+        function calcularDistancia(lat1, lon1, lat2, lon2) {
+            let R = 6371e3;
+            let dLat = (lat2 - lat1) * Math.PI / 180;
+            let dLon = (lon2 - lon1) * Math.PI / 180;
+            let a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+            let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function ejecutarEnvioCocina(btn, textoOriginal) {
+            document.getElementById('cartModal').style.display = 'none';
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+
+            alert("✅ ¡Pedido enviado a cocina! Puedes seguir agregando más platillos si lo deseas.");
+        }
+
+        function abrirPantallaPago() {
+            let currentCart = carts[currentCartLocation] || {};
+            subtotalActual = Object.values(currentCart).reduce((s, i) => s + (i.price * i.qty), 0);
+            
+            if(subtotalActual === 0) return alert("La cuenta está en ceros, no hay nada que pagar.");
+
+            document.getElementById('cartModal').style.display = 'none';
+            document.getElementById('paySubtotal').innerText = '$' + subtotalActual;
+
+            seleccionarMetodo('Efectivo');
+            actualizarTotalFinal();
+            
+            document.getElementById('paymentModal').style.display = 'flex';
+        }
+
+        function seleccionarMetodo(metodo) {
+            metodoPagoActual = metodo;
+            
+            document.getElementById('btnEfectivo').classList.toggle('active', metodo === 'Efectivo');
+            document.getElementById('btnBBVA').classList.toggle('active', metodo === 'Transferencia - BBVA');
+            document.getElementById('btnNu').classList.toggle('active', metodo === 'Transferencia - Nu');
+            document.getElementById('btnAztecaT').classList.toggle('active', metodo === 'Transferencia - Banco Azteca');
+            document.getElementById('btnCodi').classList.toggle('active', metodo === 'CoDi');
+            document.getElementById('btnAztecaQR').classList.toggle('active', metodo === 'Banco Azteca (QR)');
+
+            let container = document.getElementById('paymentDetailsContainer');
+
+            if(metodo === 'Efectivo') {
+                container.innerHTML = `
+                    <label style="font-size:0.8rem; color:#555;">¿Con cuánto paga el cliente?</label>
+                    <input type="number" id="cashInput" placeholder="$ Ej. 500" oninput="calcularCambio()" style="width:100%; padding:8px; margin-top:4px; border:1px solid #ccc; border-radius:6px;">
+                    <div style="font-size:0.85rem; font-weight:bold; margin-top:6px; color:#333;">Su cambio: <span id="changeText" style="color:green;">$0</span></div>`;
+            } else if(metodo.includes('Transferencia')) {
+                let bancoNombre = metodo.replace('Transferencia - ', '');
+                let clabeVal = bancoNombre === 'BBVA' ? '0123 2001 5421 3067 03' : (bancoNombre === 'Nu' ? '6381 8001 0114 1650 45' : '1271 8002 1376 3998 90');
+                let clabeClean = bancoNombre === 'BBVA' ? '012320015421306703' : (bancoNombre === 'Nu' ? '638180010114165045' : '127180021376399890');
+                container.innerHTML = `
+                    <p style="font-size:0.75rem; color:#666; margin-bottom:6px;">Beneficiaria: <b>ARACELI PEREZ GARCIA</b></p>
+                    <div class="bank-card">
+                        <div><b>${bancoNombre}</b><br><small>${clabeVal}</small></div>
+                        <button class="copy-btn" onclick="copiarClabe('${clabeClean}')">Copiar</button>
+                    </div>`;
+            } else if(metodo === 'CoDi') {
+                container.innerHTML = `
+                    <div style="background:#fdf2f2; padding:12px; border-radius:8px; border:1px solid #d9534f; font-size:0.85rem; text-align:center;">
+                        <p style="font-weight:bold; color:#d9534f; font-size:0.9rem; margin-bottom:6px;">📲 Paga con CoDi®</p>
+                        <p style="color:#444; margin-bottom:10px;">Abre tu cámara para escanear el código QR impreso en la mesa:</p>
+                        <button onclick="dispararCamara()" style="background:#d9534f; color:white; border:none; padding:10px 15px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; font-size:0.9rem;">📷 Abrir Cámara para Escanear QR</button>
+                    </div>`;
+            } else if(metodo === 'Banco Azteca (QR)') {
+                container.innerHTML = `
+                    <div style="background:#f4f9f4; padding:12px; border-radius:8px; border:1px solid #25d366; font-size:0.85rem; text-align:center;">
+                        <p style="font-weight:bold; color:#2e7d32; font-size:0.9rem; margin-bottom:6px;">🟢 Banco Azteca (QR)</p>
+                        <p style="color:#444; margin-bottom:10px;">Abre tu cámara para escanear el código QR o usa los datos:</p>
+                        <button onclick="dispararCamara()" style="background:#2e7d32; color:white; border:none; padding:10px 15px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; font-size:0.9rem; margin-bottom:8px;">📷 Abrir Cámara para Escanear QR</button>
+                        <p style="font-size:0.75rem; color:#333; margin-top:4px;">Beneficiaria: <b>ARACELI PEREZ GARCIA</b></p>
+                        <p style="font-size:0.75rem; color:#333;">Teléfono: <b>(55) 4935 4467</b></p>
+                    </div>`;
+            }
+        }
+
+        function dispararCamara() {
+            document.getElementById('cameraInput').click();
+        }
+
+        function procesarFotoEscaneada() {
+            let input = document.getElementById('cameraInput');
+            if (input.files && input.files.length > 0) {
+                alert("✅ ¡Código QR escaneado con éxito! Ya puedes confirmar el pago.");
+            }
+        }
+
+        function actualizarTotalFinal() {
+            let tipSelect = document.getElementById('tipSelect');
+            if(!tipSelect) return;
+            let tipPercent = parseInt(tipSelect.value);
+            let tipAmount = Math.round(subtotalActual * (tipPercent / 100));
+            let totalFinal = subtotalActual + tipAmount;
+            
+            let payTotalFinal = document.getElementById('payTotalFinal');
+            if(payTotalFinal) payTotalFinal.innerText = '$' + totalFinal;
+            if(metodoPagoActual === 'Efectivo') calcularCambio();
+        }
+
+        function calcularCambio() {
+            let tipSelect = document.getElementById('tipSelect');
+            let cashInput = document.getElementById('cashInput');
+            if(!tipSelect || !cashInput) return;
+
+            let tipPercent = parseInt(tipSelect.value);
+            let totalFinal = subtotalActual + Math.round(subtotalActual * (tipPercent / 100));
+            let pagoCliente = parseFloat(cashInput.value) || 0;
+            let cambio = pagoCliente - totalFinal;
+
+            let changeEl = document.getElementById('changeText');
+            if(changeEl) {
+                changeEl.innerText = cambio >= 0 ? '$' + cambio : 'Faltan $' + Math.abs(cambio);
+            }
+        }
+
+        function copiarClabe(clabe) {
+            navigator.clipboard.writeText(clabe).then(() => {
+                alert("¡CLABE copiada al portapapeles: " + clabe + "!");
+            }).catch(err => {
+                alert("CLABE: " + clabe);
+            });
+        }
+
+        function confirmarPagoYTerminarVisita() {
+            let tipPercent = parseInt(document.getElementById('tipSelect').value);
+            let tipAmount = Math.round(subtotalActual * (tipPercent / 100));
+            let totalFinal = subtotalActual + tipAmount;
+
+            let fechaActual = new Date().toLocaleDateString();
+            let horaActual = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            let currentCart = carts[currentCartLocation] || {};
+            let resumenProductos = [];
+            for(let k in currentCart) { 
+                let item = currentCart[k];
+                resumenProductos.push(`${item.qty}x ${item.name} ${item.options.length > 0 ? '('+item.options.join(', ')+')' : ''}`);
+            }
+            
+            let resumenTexto = resumenProductos.join(' | ');
+            
+            let mesaInfo = currentCartLocation + ` [CERRADA] - ${metodoPagoActual}`;
+            if (tipPercent > 0) {
+                mesaInfo += ` (Propina: ${tipPercent}% / +$${tipAmount})`;
+            }
+
+            if (GOOGLE_SCRIPT_URL) {
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fecha: fechaActual,
+                        hora: horaActual,
+                        mesa: mesaInfo,
+                        total: totalFinal,
+                        resumen: resumenTexto
+                    })
+                }).catch(err => console.error("Error enviando a Sheets:", err));
+            }
+
+            let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
+            history.push({
+                table: mesaInfo,
+                time: horaActual,
+                total: totalFinal,
+                summary: `PAGADO (${metodoPagoActual}) - Subtotal: $${subtotalActual} + Propina (${tipPercent}%): $${tipAmount}`
+            });
+            localStorage.setItem('salesHistory', JSON.stringify(history));
+
+            carts[currentCartLocation] = {};
+            saveCarts();
+            updateBottomButtons();
+
+            document.getElementById('paymentModal').style.display = 'none';
+            alert("🎉 ¡Mesa cerrada y pagada con éxito! Registrado con propina de " + tipPercent + "%");
+        }
+
+        function cargarHistorialVentas() {
+            let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
+            let container = document.getElementById('salesHistoryList');
+            let totalGeneral = 0;
+
+            if (history.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#777; font-size:0.8rem;">No hay ventas registradas hoy.</p>';
+                document.getElementById('totalVentasDia').innerText = '$0';
+                return;
+            }
+
+            container.innerHTML = history.map(h => {
+                totalGeneral += h.total;
+                return `<div class="history-item"><b>[${h.time}] ${h.table}</b> - <span style="color:#25d366; font-weight:bold;">$${h.total}</span><br><span style="color:#555;">${h.summary}</span></div>`;
+            }).join('');
+
+            document.getElementById('totalVentasDia').innerText = '$' + totalGeneral;
+        }
+
+        function limpiarHistorialVentas() {
+            if (confirm("¿Cerrar el día y borrar el historial local?")) {
+                localStorage.removeItem('salesHistory');
+                cargarHistorialVentas();
+                alert("Historial local reseteado.");
+            }
+        }
+
+        function pedirPinYEntrar() {
+            let ingreso = prompt("Ingresa el PIN de administrador:");
+            if (ingreso === PIN_ADMIN) { toggleView(); }
+            else if (ingreso !== null) { alert("PIN incorrecto."); }
+        }
+
+        function toggleView() {
+            const main = document.getElementById('main-view'), stats = document.getElementById('stats-view');
+            main.style.display = (main.style.display === 'none') ? 'block' : 'none';
+            stats.style.display = (stats.style.display === 'none') ? 'block' : 'none';
+            if(stats.style.display === 'block') { cargarConfigGuardada(); cargarHistorialVentas(); }
+        }
+
+        function guardarYGenerarQRs() {
+            let url = document.getElementById('siteUrlInput').value.trim();
+            if(!url) return alert("Ingresa un enlace válido");
+            if(!url.endsWith('/')) url += '/';
+            localStorage.setItem('siteUrl', url);
+            mostrarTodosLosQRs(url);
+            alert("¡QRs actualizados!");
+        }
+
+        function cargarConfigGuardada() {
+            let savedUrl = localStorage.getItem('siteUrl') || window.location.href.split('?')[0];
+            document.getElementById('siteUrlInput').value = savedUrl;
+            mostrarTodosLosQRs(savedUrl);
+        }
+
+        function mostrarTodosLosQRs(baseUrl) {
+            let container = document.getElementById('allQrContainer');
+            let mesas = ["Mesa 1", "Mesa 2", "Mesa 3", "Mesa 4", "Para llevar"];
+            container.innerHTML = mesas.map(m => {
+                let fullUrl = `${baseUrl}?mesa=${encodeURIComponent(m)}`;
+                let qrImg = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(fullUrl)}`;
+                return `<div class="qr-card"><b>🪑 ${m}</b><br><img src="${qrImg}" style="width: 120px; height: 120px; margin-top: 5px; border-radius: 4px;"><br><input type="text" value="${fullUrl}" readonly style="width: 100%; font-size: 0.7rem; padding: 4px; margin-top: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px;" onclick="this.select()"></div>`;
+            }).join('');
+        }
+    </script>
+</body>
+</html>
