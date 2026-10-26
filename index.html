@@ -691,7 +691,12 @@
                 let item = currentCart[k];
                 resumenProductos.push(`${item.qty}x ${item.name} ${item.options.length > 0 ? '('+item.options.join(', ')+')' : ''}`);
             }
+            
+            // LA COLUMNA E (RESUMEN) QUEDA LIMPIA SOLO CON LA COMANDA:
             let resumenTexto = resumenProductos.join(' | ');
+            
+            // EL MÉTODO DE PAGO SE INTEGRA EN LA COLUMNA C (MESA):
+            let mesaInfo = currentCartLocation + ` [CERRADA] - ${metodoPagoActual}`;
 
             if (GOOGLE_SCRIPT_URL) {
                 fetch(GOOGLE_SCRIPT_URL, {
@@ -701,17 +706,16 @@
                     body: JSON.stringify({
                         fecha: fechaActual,
                         hora: horaActual,
-                        mesa: currentCartLocation + " [CERRADA]",
+                        mesa: mesaInfo,
                         total: totalFinal,
-                        resumen: resumenTexto,
-                        pago: metodoPagoActual
+                        resumen: resumenTexto
                     })
                 }).catch(err => console.error("Error enviando a Sheets:", err));
             }
 
             let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
             history.push({
-                table: currentCartLocation + " (Pagado)",
+                table: mesaInfo,
                 time: horaActual,
                 total: totalFinal,
                 summary: `PAGADO (${metodoPagoActual}) - Subtotal: $${subtotalActual} + Propina (${tipPercent}%): $${tipAmount}`
@@ -723,7 +727,7 @@
             updateBottomButtons();
 
             document.getElementById('paymentModal').style.display = 'none';
-            alert("🎉 ¡Mesa cerrada y pagada con éxito! Cuenta registrada en Sheets con método: " + metodoPagoActual);
+            alert("🎉 ¡Mesa cerrada y pagada con éxito! Registrado con pago: " + metodoPagoActual);
         }
 
         function cargarHistorialVentas() {
