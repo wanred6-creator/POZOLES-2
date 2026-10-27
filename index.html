@@ -83,6 +83,13 @@
             <button onclick="limpiarHistorialVentas()" style="background: #d9534f; color: white; border: none; padding: 8px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">🗑️ Cerrar Día / Borrar Historial Local</button>
         </div>
 
+        <!-- NUEVO: CONTROL DE INGREDIENTES / OPCIONES AGOTADAS -->
+        <div style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #ddd;">
+            <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #333;">🍅 Control de Ingredientes Agotados:</h4>
+            <p style="font-size: 0.75rem; color: #666; margin-bottom: 8px;">Marca las opciones que ya no tengan existencia:</p>
+            <div id="adminOptionsList" style="max-height: 220px; overflow-y: auto;"></div>
+        </div>
+
         <div style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #ddd;">
             <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #333;">🖨️ Generador de QR por Mesa:</h4>
             <div style="display: flex; gap: 6px; margin-bottom: 10px;">
@@ -324,6 +331,7 @@
             const pambazoStyleContainer = document.getElementById('pambazoStyleContainer');
             const pambazoStyleOptionsDiv = document.getElementById('pambazoStyleOptions');
             const meatContainer = document.getElementById('meatContainer');
+            let soldOut = JSON.parse(localStorage.getItem('soldOutOptions')) || {};
 
             sizeContainer.style.display = "none";
             pambazoStyleContainer.style.display = "none";
@@ -333,8 +341,13 @@
                 sizeContainer.style.display = "block";
                 document.getElementById('sizeLabel').innerText = "Tipo de Gordita:";
                 selectedGorditaBase = currentItem.gorditaBases[0];
-                sizeOptionsDiv.innerHTML = currentItem.gorditaBases.map(b => `
-                    <div class="option-pill ${b.name === selectedGorditaBase.name ? 'active' : ''}" onclick="selectGorditaBase('${b.name}', ${b.price}, this)">${b.name} ($${b.price})</div>`).join('');
+                sizeOptionsDiv.innerHTML = currentItem.gorditaBases.map(b => {
+                    let key = currentItem.name + "_" + b.name;
+                    if (soldOut[key]) {
+                        return `<div class="option-pill" style="opacity:0.3; text-decoration:line-through; background:#ddd; cursor:not-allowed;"><s>${b.name}</s> (Agotado)</div>`;
+                    }
+                    return `<div class="option-pill ${b.name === selectedGorditaBase.name ? 'active' : ''}" onclick="selectGorditaBase('${b.name}', ${b.price}, this)">${b.name} ($${b.price})</div>`;
+                }).join('');
                 document.getElementById('optionsLabel').innerText = "Ingredientes extra (+$5 c/u):";
                 renderOptions();
             } else if (currentItem.isPambazo) {
@@ -358,8 +371,13 @@
                     sizeContainer.style.display = "block";
                     document.getElementById('sizeLabel').innerText = "Tamaño:";
                     selectedSize = currentItem.sizes[1]; 
-                    sizeOptionsDiv.innerHTML = currentItem.sizes.map(s => `
-                        <div class="option-pill ${s.name === selectedSize.name ? 'active' : ''}" onclick="selectSize('${s.name}', ${s.price}, this)">${s.name} ($${s.price})</div>`).join('');
+                    sizeOptionsDiv.innerHTML = currentItem.sizes.map(s => {
+                        let key = currentItem.name + "_" + s.name;
+                        if (soldOut[key]) {
+                            return `<div class="option-pill" style="opacity:0.3; text-decoration:line-through; background:#ddd; cursor:not-allowed;"><s>${s.name}</s> (Agotado)</div>`;
+                        }
+                        return `<div class="option-pill ${s.name === selectedSize.name ? 'active' : ''}" onclick="selectSize('${s.name}', ${s.price}, this)">${s.name} ($${s.price})</div>`;
+                    }).join('');
                 } else {
                     selectedSize = null;
                 }
@@ -393,11 +411,18 @@
         function renderOptions() {
             const container = document.getElementById('meatOptions');
             const meatContainer = document.getElementById('meatContainer');
+            let soldOut = JSON.parse(localStorage.getItem('soldOutOptions')) || {};
+
             if (currentItem.options.length > 0) {
                 meatContainer.style.display = "block";
                 container.style.display = "flex";
-                container.innerHTML = currentItem.options.map(opt => `
-                    <div class="option-pill" onclick="toggleOption('${opt}', this)">${opt}</div>`).join('');
+                container.innerHTML = currentItem.options.map(opt => {
+                    let key = currentItem.name + "_" + opt;
+                    if (soldOut[key]) {
+                        return `<div class="option-pill" style="opacity:0.3; text-decoration:line-through; background:#ddd; cursor:not-allowed;"><s>${opt}</s> (Agotado)</div>`;
+                    }
+                    return `<div class="option-pill" onclick="toggleOption('${opt}', this)">${opt}</div>`;
+                }).join('');
             } else { 
                 meatContainer.style.display = "none";
                 container.style.display = "none"; 
@@ -791,6 +816,44 @@
             }
         }
 
+        function renderAdminOptionsManager() {
+            let soldOut = JSON.parse(localStorage.getItem('soldOutOptions')) || {};
+            let container = document.getElementById('adminOptionsList');
+            if (!container) return;
+            
+            let html = '';
+            menu.forEach(item => {
+                let opts = [];
+                if (item.options && item.options.length > 0) opts = item.options;
+                if (item.gorditaBases) opts = opts.concat(item.gorditaBases.map(b => b.name));
+                if (item.sizes) opts = opts.concat(item.sizes.map(s => s.name));
+                
+                if (opts.length > 0) {
+                    html += `<div style="margin-bottom:8px; border-bottom:1px solid #eee; padding-bottom:6px;"><b style="font-size:0.8rem; color:#d9534f;">${item.name}</b><div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;">`;
+                    opts.forEach(opt => {
+                        let key = item.name + "_" + opt;
+                        let isChecked = soldOut[key] ? "checked" : "";
+                        html += `<label style="background:#fff; border:1px solid #ddd; padding:4px 8px; border-radius:4px; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                            <input type="checkbox" ${isChecked} onchange="toggleSoldOut('${item.name}', '${opt}', this.checked)"> ${opt}
+                        </label>`;
+                    });
+                    html += `</div></div>`;
+                }
+            });
+            container.innerHTML = html || '<p style="color:#777; font-size:0.8rem;">No hay opciones configurables.</p>';
+        }
+
+        function toggleSoldOut(itemName, optName, isSoldOut) {
+            let soldOut = JSON.parse(localStorage.getItem('soldOutOptions')) || {};
+            let key = itemName + "_" + optName;
+            if (isSoldOut) {
+                soldOut[key] = true;
+            } else {
+                delete soldOut[key];
+            }
+            localStorage.setItem('soldOutOptions', JSON.stringify(soldOut));
+        }
+
         function pedirPinYEntrar() {
             let ingreso = prompt("Ingresa el PIN de administrador:");
             if (ingreso === PIN_ADMIN) { toggleView(); }
@@ -801,7 +864,11 @@
             const main = document.getElementById('main-view'), stats = document.getElementById('stats-view');
             main.style.display = (main.style.display === 'none') ? 'block' : 'none';
             stats.style.display = (stats.style.display === 'none') ? 'block' : 'none';
-            if(stats.style.display === 'block') { cargarConfigGuardada(); cargarHistorialVentas(); }
+            if(stats.style.display === 'block') { 
+                cargarConfigGuardada(); 
+                cargarHistorialVentas(); 
+                renderAdminOptionsManager();
+            }
         }
 
         function guardarYGenerarQRs() {
