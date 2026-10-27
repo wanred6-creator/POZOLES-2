@@ -246,7 +246,7 @@
                 price: 35, 
                 gorditaBases: [
                     { name: "Gordita clásica (de chicharrón prensado)", price: 35 },
-                    { name: "Gordita sola con quesillo (sin chicharrón)", price: 35 }
+                    { name: "Gordita sin chicharrón (elegir ingrediente sustituto)", price: 35 }
                 ],
                 options: ["Quesillo", "Carne", "Pollo"], 
                 img: "gordita.jpg", 
@@ -349,6 +349,7 @@
             const pambazoStyleContainer = document.getElementById('pambazoStyleContainer');
             const pambazoStyleOptionsDiv = document.getElementById('pambazoStyleOptions');
             const meatContainer = document.getElementById('meatContainer');
+            const notesField = document.getElementById('itemNotes');
             let soldOut = {};
             try {
                 soldOut = JSON.parse(localStorage.getItem('soldOutOptions')) || {};
@@ -358,6 +359,7 @@
 
             sizeContainer.style.display = "none";
             pambazoStyleContainer.style.display = "none";
+            notesField.style.display = "block"; // Mostrar por defecto
 
             if (currentItem.isGordita) {
                 document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones, ingrediente extra cuesta $5";
@@ -369,18 +371,19 @@
                     if (soldOut[key]) {
                         return `<div class="option-pill" style="opacity:0.3; text-decoration:line-through; background:#ddd; cursor:not-allowed;"><s>${b.name}</s> (Agotado)</div>`;
                     }
-                    return `<div class="option-pill ${b.name === selectedGorditaBase.name ? 'active' : ''}" onclick="selectGorditaBase('${b.name}', ${b.price}, this)">${b.name} ($${b.price})</div>`;
+                    return `<div class="option-pill ${b.name === selectedGorditaBase.name ? 'active' : ''}" onclick="selectGorditaBase('${b.name}', ${b.price}, this)">${b.name}</div>`;
                 }).join('');
                 document.getElementById('optionsLabel').innerText = "Ingredientes extra (+$5 c/u):";
                 renderOptions();
             } else if (currentItem.isPambazo) {
-                document.getElementById('modalInstruction').innerText = "Elige el término (base $35, pollo/carne +$10, quesillo +$5)";
+                document.getElementById('modalInstruction').innerText = "Elige el termino ( ingrediente extra +$10)";
                 pambazoStyleContainer.style.display = "block";
                 selectedPambazoStyle = "Normal";
                 const estilos = ["Normal", "Dorado"];
                 pambazoStyleOptionsDiv.innerHTML = estilos.map(est => `
                     <div class="option-pill ${est === selectedPambazoStyle ? 'active' : ''}" onclick="selectPambazoStyle('${est}', this)">${est}</div>`).join('');
                 document.getElementById('optionsLabel').innerText = "Opciones:";
+                notesField.style.display = "none"; // Ocultar observaciones solo para pambazos
                 renderOptions();
             } else {
                 if (currentItem.isMulti) {
@@ -407,7 +410,7 @@
                 renderOptions();
             }
 
-            document.getElementById('itemNotes').value = "";
+            notesField.value = "";
             
             let takeoutCheck = document.getElementById('takeoutCheck');
             if ((activeTable === "Para llevar" || currentCartLocation === "Para llevar") && currentItem.hasTakeout) {
@@ -467,9 +470,7 @@
         function toggleOption(opt, el) {
             if (currentItem.isMulti || currentItem.isGordita || currentItem.isPambazo) {
                 if (currentItem.isPambazo) {
-                    // Permitir elegir la base (Sin papa o Papa con chorizo) y los extras
                     if (opt === "Sin papa" || opt === "Papa con chorizo") {
-                        // Asegurar que solo una base esté activa
                         document.querySelectorAll('#meatOptions .option-pill').forEach(p => {
                             if (p.innerText === "Sin papa" || p.innerText === "Papa con chorizo") {
                                 p.classList.remove('active');
@@ -479,7 +480,6 @@
                         selectedOptions.push(opt);
                         el.classList.add('active');
                     } else {
-                        // Pollo, Carne, Quesillo (extras)
                         if (selectedOptions.includes(opt)) {
                             selectedOptions = selectedOptions.filter(o => o !== opt);
                             el.classList.remove('active');
@@ -538,7 +538,7 @@
 
             if (takeout) { price += 5; finalName += " (Llevar)"; }
             
-            const notes = document.getElementById('itemNotes').value;
+            const notes = currentItem.isPambazo ? "" : document.getElementById('itemNotes').value;
             const key = currentItem.id + (selectedSize ? selectedSize.name : '') + (selectedGorditaBase ? selectedGorditaBase.name : '') + selectedPambazoStyle + selectedOptions.join(',') + takeout + notes;
             
             if (!carts[currentCartLocation]) carts[currentCartLocation] = {};
