@@ -374,7 +374,7 @@
                 document.getElementById('optionsLabel').innerText = "Ingredientes extra (+$5 c/u):";
                 renderOptions();
             } else if (currentItem.isPambazo) {
-                document.getElementById('modalInstruction').innerText = "Elige el término y hasta 2 opciones (extra +$10)";
+                document.getElementById('modalInstruction').innerText = "Elige el término (base $35, pollo/carne +$10, quesillo +$5)";
                 pambazoStyleContainer.style.display = "block";
                 selectedPambazoStyle = "Normal";
                 const estilos = ["Normal", "Dorado"];
@@ -466,12 +466,36 @@
 
         function toggleOption(opt, el) {
             if (currentItem.isMulti || currentItem.isGordita || currentItem.isPambazo) {
-                if (selectedOptions.includes(opt)) {
-                    selectedOptions = selectedOptions.filter(o => o !== opt);
-                    el.classList.remove('active');
-                } else if (selectedOptions.length < 2) {
-                    selectedOptions.push(opt);
-                    el.classList.add('active');
+                if (currentItem.isPambazo) {
+                    // Permitir elegir la base (Sin papa o Papa con chorizo) y los extras
+                    if (opt === "Sin papa" || opt === "Papa con chorizo") {
+                        // Asegurar que solo una base esté activa
+                        document.querySelectorAll('#meatOptions .option-pill').forEach(p => {
+                            if (p.innerText === "Sin papa" || p.innerText === "Papa con chorizo") {
+                                p.classList.remove('active');
+                            }
+                        });
+                        selectedOptions = selectedOptions.filter(o => o !== "Sin papa" && o !== "Papa con chorizo");
+                        selectedOptions.push(opt);
+                        el.classList.add('active');
+                    } else {
+                        // Pollo, Carne, Quesillo (extras)
+                        if (selectedOptions.includes(opt)) {
+                            selectedOptions = selectedOptions.filter(o => o !== opt);
+                            el.classList.remove('active');
+                        } else {
+                            selectedOptions.push(opt);
+                            el.classList.add('active');
+                        }
+                    }
+                } else {
+                    if (selectedOptions.includes(opt)) {
+                        selectedOptions = selectedOptions.filter(o => o !== opt);
+                        el.classList.remove('active');
+                    } else if (selectedOptions.length < 2) {
+                        selectedOptions.push(opt);
+                        el.classList.add('active');
+                    }
                 }
             } else {
                 selectedOptions = [opt];
@@ -490,11 +514,15 @@
                 finalName = `${currentItem.name} (${selectedGorditaBase.name})`;
             } else if (currentItem.isPambazo) {
                 finalName = `${currentItem.name} (${selectedPambazoStyle})`;
-                if (selectedOptions.length > 1) {
-                    price = currentItem.price + (selectedOptions.length - 1) * 10;
-                } else {
-                    price = currentItem.price;
-                }
+                price = currentItem.price; // Base $35
+                
+                selectedOptions.forEach(opt => {
+                    if (opt === "Pollo" || opt === "Carne") {
+                        price += 10;
+                    } else if (opt === "Quesillo") {
+                        price += 5;
+                    }
+                });
             } else {
                 if (selectedSize) finalName += ` (${selectedSize.name})`;
                 if (currentItem.name === "Agua de Jamaica" && selectedOptions.includes("Medio litro ($20)")) price = 20;
