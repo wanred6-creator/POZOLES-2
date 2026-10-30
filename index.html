@@ -237,6 +237,8 @@
 
         const menu = [
             { id: 1, name: "Pozole", category: "Pozoles y Caldos", sizes: [{name: "Chica", price: 80}, {name: "Grande", price: 100}], options: ["Pollo", "Maciza", "Cabeza", "Surtida"], img: "pozole.jpg", hasTakeout: true, isMulti: false },
+            { id: 13, name: "Tostadas extras", category: "Pozoles y Caldos", price: 2, options: [], img: "tostada_extra.jpg", hasTakeout: false, isMulti: false },
+            { id: 14, name: "Crema extra", category: "Pozoles y Caldos", price: 10, options: [], img: "crema.jpg", hasTakeout: false, isMulti: false },
             { id: 2, name: "Pancita", category: "Pozoles y Caldos", sizes: [{name: "Chica", price: 80}, {name: "Grande", price: 100}], options: [], img: "pancita.jpg", hasTakeout: true, isMulti: false },
             { id: 3, name: "Flautas", category: "Antojitos", price: 75, options: ["Pollo", "Carne"], img: "flautas.jpg", hasTakeout: false, isMulti: false },
             { 
@@ -292,7 +294,7 @@
                     if (isSoldOut) {
                         priceText = `<span style="color:#d9534f; font-weight:bold; font-size:0.75rem;">No disponible por el momento</span>`;
                     } else {
-                        priceText = (item.id === 1 || item.id === 2) ? '$100' : (item.sizes ? 'Desde $' + item.sizes[0].price : '$' + item.price + '.00');
+                        priceText = (item.id === 1) ? '$100' : (item.sizes ? 'Desde $' + item.sizes[0].price : '$' + item.price + '.00');
                     }
 
                     return `
@@ -359,7 +361,7 @@
 
             sizeContainer.style.display = "none";
             pambazoStyleContainer.style.display = "none";
-            notesField.style.display = "block"; // Mostrar por defecto
+            notesField.style.display = "block";
 
             if (currentItem.isGordita) {
                 document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones, ingrediente extra cuesta $5";
@@ -376,14 +378,14 @@
                 document.getElementById('optionsLabel').innerText = "Ingredientes extra (+$5 c/u):";
                 renderOptions();
             } else if (currentItem.isPambazo) {
-                document.getElementById('modalInstruction').innerText = "Elige el termino ( ingrediente extra +$10)";
+                document.getElementById('modalInstruction').innerText = "Elige el término ( ingrediente extra +$10)";
                 pambazoStyleContainer.style.display = "block";
                 selectedPambazoStyle = "Normal";
                 const estilos = ["Normal", "Dorado"];
                 pambazoStyleOptionsDiv.innerHTML = estilos.map(est => `
                     <div class="option-pill ${est === selectedPambazoStyle ? 'active' : ''}" onclick="selectPambazoStyle('${est}', this)">${est}</div>`).join('');
                 document.getElementById('optionsLabel').innerText = "Opciones:";
-                notesField.style.display = "none"; // Ocultar observaciones solo para pambazos
+                notesField.style.display = "none";
                 renderOptions();
             } else {
                 if (currentItem.isMulti) {
@@ -451,7 +453,7 @@
                 soldOut = {};
             }
 
-            if (currentItem.options.length > 0) {
+            if (currentItem.options && currentItem.options.length > 0) {
                 meatContainer.style.display = "block";
                 container.style.display = "flex";
                 container.innerHTML = currentItem.options.map(opt => {
@@ -514,7 +516,7 @@
                 finalName = `${currentItem.name} (${selectedGorditaBase.name})`;
             } else if (currentItem.isPambazo) {
                 finalName = `${currentItem.name} (${selectedPambazoStyle})`;
-                price = currentItem.price; // Base $35
+                price = currentItem.price; 
                 
                 selectedOptions.forEach(opt => {
                     if (opt === "Pollo" || opt === "Carne") {
@@ -658,7 +660,7 @@
             btn.innerHTML = textoOriginal;
             btn.disabled = false;
 
-            alert("✅ ¡Pedido enviado a cocina! Puedes seguir agregando más platillos si lo deseas.");
+            alert("✅ ¡Pedido enviado a cocina!");
         }
 
         function abrirPantallaPago() {
