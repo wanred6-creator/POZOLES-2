@@ -37,10 +37,11 @@
         .option-pill { padding: 8px 12px; background:#eee; border-radius:15px; cursor:pointer; font-size:0.8rem; border: 1px solid #ddd; }
         .option-pill.active { background: #d9534f; color: white; border-color: #d9534f; }
         
-        /* Controles de cantidad con botones mas y menos */
         .quantity-control { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 8px; background: #f9f9f9; padding: 8px; border-radius: 8px; border: 1px solid #ddd; }
         .q-btn { background: #d9534f; color: white; border: none; width: 35px; height: 35px; border-radius: 8px; font-size: 1.2rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .q-display { font-size: 1.2rem; font-weight: bold; color: #333; min-width: 30px; text-align: center; }
+
+        .mixtas-row { display: flex; align-items: center; justify-content: space-between; background: #f9f9f9; padding: 8px 12px; border-radius: 8px; margin-top: 8px; border: 1px solid #ddd; }
 
         .bottom-bar-multi { position: fixed; bottom: 0; width: 100%; background: white; padding: 10px; border-top: 1px solid #ddd; max-width: 600px; left: 50%; transform: translateX(-50%); z-index: 5; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
         .bottom-btn { background: #d9534f; color: white; border: none; padding: 8px 2px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer; text-align: center; }
@@ -149,6 +150,26 @@
                 </div>
             </div>
 
+            <div id="mixtasContainer" style="margin-top:10px; display:none;">
+                <div class="mixtas-row">
+                    <span>🍗 Pollo</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button type="button" class="q-btn" style="width:30px; height:30px; font-size:1rem;" onclick="cambiarMixtas('pollo', -1)">-</button>
+                        <span class="q-display" id="mixtasPolloCount">1</span>
+                        <button type="button" class="q-btn" style="width:30px; height:30px; font-size:1rem;" onclick="cambiarMixtas('pollo', 1)">+</button>
+                    </div>
+                </div>
+                <div class="mixtas-row">
+                    <span>🥩 Carne</span>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button type="button" class="q-btn" style="width:30px; height:30px; font-size:1rem;" onclick="cambiarMixtas('carne', -1)">-</button>
+                        <span class="q-display" id="mixtasCarneCount">2</span>
+                        <button type="button" class="q-btn" style="width:30px; height:30px; font-size:1rem;" onclick="cambiarMixtas('carne', 1)">+</button>
+                    </div>
+                </div>
+                <small style="display:block; text-align:center; color:#d9534f; margin-top:6px; font-weight:bold;" id="mixtasWarning"></small>
+            </div>
+
             <div id="pambazoStyleContainer" style="margin-top:10px; display:none;">
                 <label style="font-size:0.8rem; font-weight:bold; color:#555;">Término de cocinado:</label>
                 <div id="pambazoStyleOptions" style="display:flex; gap:8px; margin-top:5px"></div>
@@ -246,6 +267,8 @@
         let selectedOptions = []; 
         let currentItem = null;
         let modalQuantity = 1;
+        let mixtasPollo = 1;
+        let mixtasCarne = 2;
 
         function handleHeaderTap() {
             tapCounter++;
@@ -257,26 +280,25 @@
             }
         }
 
-        // MENÚ CON EMOJIS Y OPCIONES ACTUALIZADAS
         const menu = [
-            // 1. POZOLES
+            // 1. POZOLES (Con emojis actualizados: Surtida con 🐖, Pancita con 🐮)
             { id: "poz_maciza", name: "Pozole (Maciza)", category: "Pozoles y Caldos", sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], img: "pozole.jpg", hasTakeout: true, emoji: "🐷" },
-            { id: "poz_surtida", name: "Pozole (Surtida)", category: "Pozoles y Caldos", sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], img: "pozole.jpg", hasTakeout: true, emoji: "🐷" },
+            { id: "poz_surtida", name: "Pozole (Surtida)", category: "Pozoles y Caldos", sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], img: "pozole.jpg", hasTakeout: true, emoji: "🐖" },
             { id: "poz_pollo", name: "Pozole (Pollo)", category: "Pozoles y Caldos", sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], img: "pozole.jpg", hasTakeout: true, emoji: "🐤" },
             { id: "poz_sin", name: "Pozole (Sin carne)", category: "Pozoles y Caldos", price: 70, img: "pozole.jpg", hasTakeout: true, emoji: "🍃" },
 
-            // 2. COMPLEMENTOS
-            { id: "tostadas_extras", name: "Tostadas extras", category: "Pozoles y Caldos", price: 2, img: "tostada_extra.jpg", hasTakeout: false, emoji: "🌽", isQuantityable: true },
-            { id: "crema_extra", name: "Crema extra", category: "Pozoles y Caldos", price: 10, img: "crema.jpg", hasTakeout: false, emoji: "🥛" },
+            // 2. COMPLEMENTOS (Sin observaciones en crema)
+            { id: "tostadas_extras", name: "Tostadas extras", category: "Pozoles y Caldos", price: 2, img: "tostada_extra.jpg", hasTakeout: false, emoji: "🌽", isQuantityable: true, hideNotes: true },
+            { id: "crema_extra", name: "Crema extra", category: "Pozoles y Caldos", price: 10, img: "crema.jpg", hasTakeout: false, emoji: "🥛", hideNotes: true },
 
-            // 3. PANCITA
-            { id: "pancita_chica", name: "Pancita Chica", category: "Pozoles y Caldos", price: 80, img: "pancita.jpg", hasTakeout: true, emoji: "🥣" },
-            { id: "pancita_grande", name: "Pancita Grande", category: "Pozoles y Caldos", price: 100, img: "pancita.jpg", hasTakeout: true, emoji: "🥣" },
+            // 3. PANCITA (Emoji de vaca 🐮)
+            { id: "pancita_chica", name: "Pancita Chica", category: "Pozoles y Caldos", price: 80, img: "pancita.jpg", hasTakeout: true, emoji: "🐮" },
+            { id: "pancita_grande", name: "Pancita Grande", category: "Pozoles y Caldos", price: 100, img: "pancita.jpg", hasTakeout: true, emoji: "🐮" },
 
-            // 4. ANTOJITOS
+            // 4. ANTOJITOS (Flautas mixtas con control de 3 piezas)
             { id: "flautas_pollo", name: "Flautas de Pollo (Orden de 3 piezas)", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false, emoji: "🌮" },
             { id: "flautas_carne", name: "Flautas de Carne (Orden de 3 piezas)", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false, emoji: "🌮" },
-            { id: "flautas_mixtas", name: "Flautas Mixtas (Orden de 3 piezas)", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false, emoji: "🌮", isFlautasMixtas: true, options: ["Pollo", "Carne"] },
+            { id: "flautas_mixtas", name: "Flautas Mixtas (Orden de 3 piezas)", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false, emoji: "🌮", isFlautasMixtas: true },
             { id: "flauta_individual", name: "Flauta individual (1 pieza)", category: "Antojitos", price: 25, img: "flautas.jpg", hasTakeout: false, emoji: "🌮", options: ["Pollo", "Carne"] },
 
             { id: "gordita_chicharron", name: "Gordita clásica (Chicharrón prensado)", category: "Antojitos", price: 35, options: ["Quesillo", "Carne", "Pollo"], img: "gordita.jpg", hasTakeout: false, isMulti: true, emoji: "🫓" },
@@ -397,6 +419,7 @@
             const sizeContainer = document.getElementById('sizeContainer');
             const sizeOptionsDiv = document.getElementById('sizeOptions');
             const quantityContainer = document.getElementById('quantityContainer');
+            const mixtasContainer = document.getElementById('mixtasContainer');
             const pambazoStyleContainer = document.getElementById('pambazoStyleContainer');
             const pambazoStyleOptionsDiv = document.getElementById('pambazoStyleOptions');
             const meatContainer = document.getElementById('meatContainer');
@@ -404,6 +427,7 @@
 
             sizeContainer.style.display = "none";
             quantityContainer.style.display = "none";
+            mixtasContainer.style.display = "none";
             pambazoStyleContainer.style.display = "none";
             meatContainer.style.display = "none";
             notesField.style.display = "block";
@@ -425,6 +449,17 @@
                 document.getElementById('modalQtyDisplay').innerText = modalQuantity;
             }
 
+            if (currentItem.isFlautasMixtas) {
+                mixtasContainer.style.display = "block";
+                mixtasPollo = 1;
+                mixtasCarne = 2;
+                actualizarDisplayMixtas();
+            }
+
+            if (currentItem.hideNotes) {
+                notesField.style.display = "none";
+            }
+
             if (currentItem.isPambazo) {
                 document.getElementById('modalInstruction').innerText = "Elige el término (ingrediente extra +$10)";
                 pambazoStyleContainer.style.display = "block";
@@ -434,17 +469,16 @@
                     <div class="option-pill ${est === selectedPambazoStyle ? 'active' : ''}" onclick="selectPambazoStyle('${est}', this)">${est}</div>`).join('');
                 notesField.style.display = "none";
                 renderOptions();
-            } else if (currentItem.isFlautasMixtas) {
-                document.getElementById('modalInstruction').innerText = "Selecciona cómo combinas tus 3 piezas:";
-                renderOptions();
-            } else if (currentItem.options && currentItem.options.length > 0) {
+            } else if (!currentItem.isFlautasMixtas && currentItem.options && currentItem.options.length > 0) {
                 document.getElementById('modalInstruction').innerText = "Selecciona una opción:";
                 renderOptions();
-            } else {
+            } else if (!currentItem.isFlautasMixtas) {
                 document.getElementById('modalInstruction').innerText = "";
             }
 
-            notesField.value = "";
+            if (!currentItem.hideNotes) {
+                notesField.value = "";
+            }
             
             let takeoutCheck = document.getElementById('takeoutCheck');
             if ((activeTable === "Para llevar" || currentCartLocation === "Para llevar") && currentItem.hasTakeout) {
@@ -461,6 +495,34 @@
             modalQuantity += delta;
             if (modalQuantity < 1) modalQuantity = 1;
             document.getElementById('modalQtyDisplay').innerText = modalQuantity;
+        }
+
+        function cambiarMixtas(sabor, delta) {
+            if (sabor === 'pollo') {
+                let nuevo = mixtasPollo + delta;
+                if (nuevo >= 0 && nuevo <= 3) {
+                    mixtasPollo = nuevo;
+                    mixtasCarne = 3 - mixtasPollo;
+                }
+            } else {
+                let nuevo = mixtasCarne + delta;
+                if (nuevo >= 0 && nuevo <= 3) {
+                    mixtasCarne = nuevo;
+                    mixtasPollo = 3 - mixtasCarne;
+                }
+            }
+            actualizarDisplayMixtas();
+        }
+
+        function actualizarDisplayMixtas() {
+            document.getElementById('mixtasPolloCount').innerText = mixtasPollo;
+            document.getElementById('mixtasCarneCount').innerText = mixtasCarne;
+            let warn = document.getElementById('mixtasWarning');
+            if (mixtasPollo + mixtasCarne !== 3) {
+                warn.innerText = "⚠️ La orden debe sumar exactamente 3 piezas";
+            } else {
+                warn.innerText = "✅ Orden de 3 piezas completa";
+            }
         }
 
         function selectSize(name, price, el) {
@@ -507,7 +569,7 @@
                         el.classList.add('active');
                     }
                 }
-            } else if (currentItem.isMulti || currentItem.isFlautasMixtas) {
+            } else if (currentItem.isMulti) {
                 if (selectedOptions.includes(opt)) {
                     selectedOptions = selectedOptions.filter(o => o !== opt);
                     el.classList.remove('active');
@@ -523,13 +585,23 @@
         }
 
         function agregarAlCarrito() {
+            if (currentItem.isFlautasMixtas && (mixtasPollo + mixtasCarne !== 3)) {
+                alert("Las flautas mixtas deben sumar exactamente 3 piezas.");
+                return;
+            }
+
             let price = selectedSize ? selectedSize.price : currentItem.price;
             let finalName = currentItem.name;
             let takeout = document.getElementById('takeoutCheck').checked;
             let quantity = currentItem.isQuantityable ? modalQuantity : 1;
+            let extraInfo = "";
 
             if (selectedSize) {
                 finalName += ` (${selectedSize.name})`;
+            }
+
+            if (currentItem.isFlautasMixtas) {
+                extraInfo = `${mixtasPollo} Pollo, ${mixtasCarne} Carne`;
             }
 
             if (currentItem.isPambazo) {
@@ -544,8 +616,11 @@
 
             if (takeout) { price += 5; finalName += " (Llevar)"; }
             
-            const notes = currentItem.isPambazo ? "" : document.getElementById('itemNotes').value;
-            const key = currentItem.id + (selectedSize ? selectedSize.name : '') + selectedPambazoStyle + selectedOptions.join(',') + takeout + notes;
+            let combinedOptions = [...selectedOptions];
+            if (extraInfo) combinedOptions.push(extraInfo);
+
+            const notes = currentItem.hideNotes ? "" : document.getElementById('itemNotes').value;
+            const key = currentItem.id + (selectedSize ? selectedSize.name : '') + selectedPambazoStyle + combinedOptions.join(',') + takeout + notes;
             
             if (!carts[currentCartLocation]) carts[currentCartLocation] = {};
             
@@ -556,7 +631,7 @@
                     name: finalName, 
                     category: currentItem.category,
                     price: price, 
-                    options: selectedOptions, 
+                    options: combinedOptions, 
                     notes: notes, 
                     qty: quantity 
                 };
