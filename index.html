@@ -43,10 +43,7 @@
 
         .mixtas-row { display: flex; align-items: center; justify-content: space-between; background: #f9f9f9; padding: 8px 12px; border-radius: 8px; margin-top: 8px; border: 1px solid #ddd; }
 
-        .bottom-bar-multi { position: fixed; bottom: 0; width: 100%; background: white; padding: 10px; border-top: 1px solid #ddd; max-width: 600px; left: 50%; transform: translateX(-50%); z-index: 5; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
-        .bottom-btn { background: #d9534f; color: white; border: none; padding: 8px 2px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer; text-align: center; }
-        .bottom-btn.llevar { background: #333; }
-
+        /* Barra estilo ticket flotante inferior unificada */
         .bottom-bar-single { position: fixed; bottom: 15px; width: calc(100% - 30px); background: #25d366; color: white; padding: 12px 20px; border-radius: 12px; max-width: 570px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.25); font-weight: bold; transition: transform 0.2s; }
         .bottom-bar-single:active { transform: translateX(-50%) scale(0.98); }
 
@@ -111,19 +108,12 @@
         <button class="btn-admin" style="background:#666; margin-top:20px" onclick="location.reload()">🔄 Actualizar Datos</button>
     </div>
 
-    <div class="bottom-bar-multi" id="multiTableBar">
-        <button class="bottom-btn" onclick="abrirCart('Mesa 1')" id="btn-Mesa 1">M1 (0)</button>
-        <button class="bottom-btn" onclick="abrirCart('Mesa 2')" id="btn-Mesa 2">M2 (0)</button>
-        <button class="bottom-btn" onclick="abrirCart('Mesa 3')" id="btn-Mesa 3">M3 (0)</button>
-        <button class="bottom-btn" onclick="abrirCart('Mesa 4')" id="btn-Mesa 4">M4 (0)</button>
-        <button class="bottom-btn llevar" onclick="abrirCart('Para llevar')" id="btn-Para llevar">Llevar (0)</button>
-    </div>
-
-    <div class="bottom-bar-single" id="singleCartBar" onclick="abrirCart(activeTable)" style="display: none;">
+    <!-- BARRA INFERIOR FLOTANTE ÚNICA (TICKET) -->
+    <div class="bottom-bar-single" id="singleCartBar" onclick="abrirCart(activeTable)">
         <div style="display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 1.4rem;">🛒</span>
             <div>
-                <div style="font-size: 0.75rem; opacity: 0.9;" id="barTableName">Mi Cuenta</div>
+                <div style="font-size: 0.75rem; opacity: 0.9;" id="barTableName">Cuenta de Mesa 1</div>
                 <div style="font-size: 0.95rem;" id="barItemsText">0 productos seleccionados</div>
             </div>
         </div>
@@ -327,7 +317,7 @@
             { id: "tostada_res", name: "Tostada de Res", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false, emoji: "🐮" },
             { id: "tostada_pata", name: "Tostada de Pata", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false, emoji: "🐷" },
 
-            // 5. BEBIDAS (Sin observaciones y con emojis actualizados)
+            // 5. BEBIDAS
             { id: "jamaica_litro", name: "Agua de Jamaica (Litro)", category: "Bebidas", price: 40, img: "jamaica.jpg", hasTakeout: false, emoji: "🏵️", hideNotes: true },
             { id: "jamaica_medio", name: "Agua de Jamaica (Medio litro)", category: "Bebidas", price: 20, img: "jamaica.jpg", hasTakeout: false, emoji: "🏵️", hideNotes: true },
             { id: "cocacola", name: "Coca-Cola", category: "Bebidas", price: 30, img: "cocacola.jpg", hasTakeout: false, emoji: "🥤", hideNotes: true },
@@ -375,7 +365,7 @@
                     return `
                     <div class="menu-item ${isSoldOut ? 'sold-out' : ''}" onclick="${isSoldOut ? '' : `abrirModal('${item.id}')`}">
                         <div style="display:flex; align-items:center; gap:10px">
-                            <img src="${item.img}" class="menu-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'75\\' height=\\'75\\'<rect width=\\'75\\' height=\\'75\\' fill=\\'%23eee\\'/></svg>'">
+                            <img src="${item.img}" class="menu-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'75\\' height=\\'75\\'><rect width=\\'75\\' height=\\'75\\' fill=\\'%23eee\\'/></svg>'">
                             <div>
                                 <h3>${item.name}</h3>
                                 <p style="font-size: 0.85rem; color: #555;">${priceText}</p>
@@ -397,17 +387,10 @@
             if (mesaParam) {
                 isQrMode = true;
                 activeTable = decodeURIComponent(mesaParam);
-                document.getElementById('tableIndicatorText').innerText = `📍 Estás ordenando desde: ${activeTable}`;
-                document.getElementById('tableTabsContainer').style.display = 'none';
-                document.getElementById('multiTableBar').style.display = 'none';
-                document.getElementById('singleCartBar').style.display = 'flex';
-                document.getElementById('barTableName').innerText = `Cuenta de ${activeTable}`;
             } else {
                 isQrMode = false;
-                document.getElementById('tableIndicatorText').innerText = `🍽️ Menú General (Mesa seleccionada: ${activeTable})`;
-                document.getElementById('multiTableBar').style.display = 'grid';
-                document.getElementById('singleCartBar').style.display = 'none';
             }
+            document.getElementById('tableIndicatorText').innerText = `🍽️ Menú General (Mesa seleccionada: ${activeTable})`;
             updateBottomButtons();
         });
 
@@ -417,6 +400,7 @@
                 tab.classList.toggle('active', tab.innerText.includes(table));
             });
             document.getElementById('tableIndicatorText').innerText = `🍽️ Menú General (Mesa seleccionada: ${activeTable})`;
+            updateBottomButtons();
         }
 
         function abrirModal(id) {
@@ -604,12 +588,12 @@
             const notes = currentItem.hideNotes ? "" : document.getElementById('itemNotes').value;
             const key = currentItem.id + (selectedSize ? selectedSize.name : '') + selectedPambazoStyle + combinedOptions.join(',') + takeout + notes;
             
-            if (!carts[currentCartLocation]) carts[currentCartLocation] = {};
+            if (!carts[activeTable]) carts[activeTable] = {};
             
-            if (carts[currentCartLocation][key]) {
-                carts[currentCartLocation][key].qty += quantity;
+            if (carts[activeTable][key]) {
+                carts[activeTable][key].qty += quantity;
             } else {
-                carts[currentCartLocation][key] = { 
+                carts[activeTable][key] = { 
                     name: finalName, 
                     category: currentItem.category,
                     price: price, 
@@ -625,22 +609,13 @@
         }
 
         function updateBottomButtons() {
-            if (isQrMode) {
-                let currentCart = carts[activeTable] || {};
-                let count = Object.values(currentCart).reduce((s, i) => s + i.qty, 0);
-                let total = Object.values(currentCart).reduce((s, i) => s + (i.price * i.qty), 0);
-                
-                document.getElementById('barItemsText').innerText = count === 1 ? '1 producto seleccionado' : `${count} productos seleccionados`;
-                document.getElementById('barTotalText').innerText = `$${total}`;
-            } else {
-                const tables = ["Mesa 1", "Mesa 2", "Mesa 3", "Mesa 4", "Para llevar"];
-                tables.forEach(t => {
-                    let count = Object.values(carts[t] || {}).reduce((s, i) => s + i.qty, 0);
-                    let btnId = t === "Para llevar" ? "btn-Para llevar" : `btn-${t}`;
-                    let label = t === "Para llevar" ? "Llevar" : t.replace("Mesa ", "M");
-                    document.getElementById(btnId).innerText = `${label} (${count})`;
-                });
-            }
+            let currentCart = carts[activeTable] || {};
+            let count = Object.values(currentCart).reduce((s, i) => s + i.qty, 0);
+            let total = Object.values(currentCart).reduce((s, i) => s + (i.price * i.qty), 0);
+            
+            document.getElementById('barTableName').innerText = `Cuenta de ${activeTable}`;
+            document.getElementById('barItemsText').innerText = count === 1 ? '1 producto seleccionado' : `${count} productos seleccionados`;
+            document.getElementById('barTotalText').innerText = `$${total}`;
         }
 
         function abrirCart(location) {
