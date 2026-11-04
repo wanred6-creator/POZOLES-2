@@ -181,7 +181,7 @@
             </div>
 
             <div id="takeoutContainer" style="margin-top:15px; display:none;"><label style="font-weight:bold"><input type="checkbox" id="takeoutCheck"> Para llevar (+$5)</label></div>
-            <textarea id="itemNotes" style="width:100%; padding:10px; margin-top:10px; border:1px solid #ccc; border-radius:8px;" placeholder="Observaciones (ej. Sin lechuga)"></textarea>
+            <textarea id="itemNotes" style="width:100%; padding:10px; margin-top:10px; border:1px solid #ccc; border-radius:8px;" placeholder="Observaciones (ej. sin lechuga, sin queso, sin crema)"></textarea>
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button style="flex:1; padding:10px; border-radius:8px; border:none; background:#eee" onclick="document.getElementById('customModal').style.display='none'">Cancelar</button>
                 <button style="flex:1; padding:10px; border-radius:8px; border:none; background:#d9534f; color:white" onclick="agregarAlCarrito()">Agregar</button>
@@ -299,22 +299,22 @@
             { id: "flautas_pollo", name: "Flautas de Pollo (Orden de 3 piezas)", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false, emoji: "🌮" },
             { id: "flautas_carne", name: "Flautas de Carne (Orden de 3 piezas)", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false, emoji: "🌮" },
             { id: "flautas_mixtas", name: "Flautas Mixtas (Orden de 3 piezas)", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false, emoji: "🌮", isFlautasMixtas: true },
-            { id: "flauta_individual", name: "Flauta individual (1 pieza)", category: "Antojitos", price: 25, img: "flautas.jpg", hasTakeout: false, emoji: "🌮", options: ["Pollo", "Carne", "Quesillo"] },
+            { id: "flauta_individual", name: "Flauta individual (1 pieza)", category: "Antojitos", price: 25, img: "flautas.jpg", hasTakeout: false, emoji: "🌮", options: ["Quesillo"] },
 
-            // GORDITAS (Ordenadas antes de quesadillas con precios y emojis correctos)
+            // GORDITAS (Con quesillo como única opción extra)
             { id: "gordita_chicharron", name: "Gordita clásica (Chicharrón prensado)", category: "Antojitos", price: 35, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐷" },
             { id: "gordita_chicharron_pollo", name: "Gordita de chicharrón con pollo", category: "Antojitos", price: 45, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐷🐤" },
             { id: "gordita_chicharron_carne", name: "Gordita de chicharrón con carne", category: "Antojitos", price: 45, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐷🐮" },
-            { id: "gordita_carne", name: "Gordita de Carne", category: "Antojitos", price: 40, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐮", defaultNotes: "Sin chicharrón" },
-            { id: "gordita_pollo", name: "Gordita de Pollo", category: "Antojitos", price: 40, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐤", defaultNotes: "Sin chicharrón" },
+            { id: "gordita_carne", name: "Gordita de carne ( sin chicharrón)", category: "Antojitos", price: 40, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐮", defaultNotes: "sin chicharrón" },
+            { id: "gordita_pollo", name: "Gordita de pollo ( sin chicharrón)", category: "Antojitos", price: 40, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐤", defaultNotes: "sin chicharrón" },
 
-            // QUESADILLAS (Con emojis específicos por sabor)
-            { id: "quesadilla_quesillo", name: "Quesadilla de Quesillo", category: "Antojitos", price: 30, options: ["Hongos", "Flor", "Carne", "Pollo"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🧀" },
-            { id: "quesadilla_carne", name: "Quesadilla de Carne", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos", "Flor"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🐮" },
-            { id: "quesadilla_chicharron", name: "Quesadilla de Chicharrón", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🐷" },
-            { id: "quesadilla_hongos", name: "Quesadilla de Hongos", category: "Antojitos", price: 30, options: ["Quesillo", "Flor"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🍄" },
-            { id: "quesadilla_flor", name: "Quesadilla de Flor de Calabaza", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🪷" },
-            { id: "quesadilla_pollo", name: "Quesadilla de Pollo", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🐤" },
+            // QUESADILLAS (Salvo quesillo, todas con quesillo como opción extra)
+            { id: "quesadilla_quesillo", name: "Quesadilla de Quesillo", category: "Antojitos", price: 30, img: "quesadilla.jpg", hasTakeout: false, emoji: "🧀" },
+            { id: "quesadilla_carne", name: "Quesadilla de Carne", category: "Antojitos", price: 30, options: ["Quesillo"], img: "quesadilla.jpg", hasTakeout: false, emoji: "🐮" },
+            { id: "quesadilla_chicharron", name: "Quesadilla de Chicharrón", category: "Antojitos", price: 30, options: ["Quesillo"], img: "quesadilla.jpg", hasTakeout: false, emoji: "🐷" },
+            { id: "quesadilla_hongos", name: "Quesadilla de Hongos", category: "Antojitos", price: 30, options: ["Quesillo"], img: "quesadilla.jpg", hasTakeout: false, emoji: "🍄" },
+            { id: "quesadilla_flor", name: "Quesadilla de Flor de Calabaza", category: "Antojitos", price: 30, options: ["Quesillo"], img: "quesadilla.jpg", hasTakeout: false, emoji: "🪷" },
+            { id: "quesadilla_pollo", name: "Quesadilla de Pollo", category: "Antojitos", price: 30, options: ["Quesillo"], img: "quesadilla.jpg", hasTakeout: false, emoji: "🐤" },
 
             { id: "pambazo", name: "Pambazo", category: "Antojitos", price: 35, options: ["Sin papa", "Papa con chorizo", "Pollo", "Carne", "Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖" },
 
@@ -473,7 +473,7 @@
                 notesField.style.display = "none";
                 renderOptions();
             } else if (!currentItem.isFlautasMixtas && currentItem.options && currentItem.options.length > 0) {
-                document.getElementById('modalInstruction').innerText = "Selecciona opciones extra:";
+                document.getElementById('modalInstruction').innerText = "Adicional opcional:";
                 renderOptions();
             } else if (!currentItem.isFlautasMixtas) {
                 document.getElementById('modalInstruction').innerText = "";
@@ -571,14 +571,6 @@
                         selectedOptions.push(opt);
                         el.classList.add('active');
                     }
-                }
-            } else if (currentItem.isMulti) {
-                if (selectedOptions.includes(opt)) {
-                    selectedOptions = selectedOptions.filter(o => o !== opt);
-                    el.classList.remove('active');
-                } else {
-                    selectedOptions.push(opt);
-                    el.classList.add('active');
                 }
             } else {
                 if (selectedOptions.includes(opt)) {
