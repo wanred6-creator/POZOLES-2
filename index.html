@@ -367,7 +367,7 @@
                     if (isSoldOut) {
                         priceText = `<span style="color:#d9534f; font-weight:bold; font-size:0.75rem;">No disponible</span>`;
                     } else if (item.sizes) {
-                        priceText = `Desde $${item.sizes[0].price}.00`;
+                        priceText = `grande $100, chico $80`;
                     } else {
                         priceText = `$${item.price}.00`;
                     }
@@ -375,10 +375,10 @@
                     return `
                     <div class="menu-item ${isSoldOut ? 'sold-out' : ''}" onclick="${isSoldOut ? '' : `abrirModal('${item.id}')`}">
                         <div style="display:flex; align-items:center; gap:10px">
-                            <img src="${item.img}" class="menu-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'75\\' height=\\'75\\'><rect width=\\'75\\' height=\\'75\\' fill=\\'%23eee\\'/></svg>'">
+                            <img src="${item.img}" class="menu-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'75\\' height=\\'75\\'<rect width=\\'75\\' height=\\'75\\' fill=\\'%23eee\\'/></svg>'">
                             <div>
                                 <h3>${item.name}</h3>
-                                <p>${priceText}</p>
+                                <p style="font-size: 0.85rem; color: #555;">${priceText}</p>
                             </div>
                         </div>
                         <div class="action-group">
