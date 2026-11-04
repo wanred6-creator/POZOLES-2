@@ -281,31 +281,34 @@
         }
 
         const menu = [
-            // 1. POZOLES (Con emojis actualizados: Surtida con 🐖, Pancita con 🐮)
+            // 1. POZOLES
             { id: "poz_maciza", name: "Pozole (Maciza)", category: "Pozoles y Caldos", sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], img: "pozole.jpg", hasTakeout: true, emoji: "🐷" },
             { id: "poz_surtida", name: "Pozole (Surtida)", category: "Pozoles y Caldos", sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], img: "pozole.jpg", hasTakeout: true, emoji: "🐖" },
             { id: "poz_pollo", name: "Pozole (Pollo)", category: "Pozoles y Caldos", sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], img: "pozole.jpg", hasTakeout: true, emoji: "🐤" },
             { id: "poz_sin", name: "Pozole (Sin carne)", category: "Pozoles y Caldos", price: 70, img: "pozole.jpg", hasTakeout: true, emoji: "🍃" },
 
-            // 2. COMPLEMENTOS (Sin observaciones en crema)
+            // 2. COMPLEMENTOS
             { id: "tostadas_extras", name: "Tostadas extras", category: "Pozoles y Caldos", price: 2, img: "tostada_extra.jpg", hasTakeout: false, emoji: "🌽", isQuantityable: true, hideNotes: true },
             { id: "crema_extra", name: "Crema extra", category: "Pozoles y Caldos", price: 10, img: "crema.jpg", hasTakeout: false, emoji: "🥛", hideNotes: true },
 
-            // 3. PANCITA (Emoji de vaca 🐮)
+            // 3. PANCITA
             { id: "pancita_chica", name: "Pancita Chica", category: "Pozoles y Caldos", price: 80, img: "pancita.jpg", hasTakeout: true, emoji: "🐮" },
             { id: "pancita_grande", name: "Pancita Grande", category: "Pozoles y Caldos", price: 100, img: "pancita.jpg", hasTakeout: true, emoji: "🐮" },
 
-            // 4. ANTOJITOS (Flautas mixtas con control de 3 piezas)
+            // 4. ANTOJITOS
             { id: "flautas_pollo", name: "Flautas de Pollo (Orden de 3 piezas)", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false, emoji: "🌮" },
             { id: "flautas_carne", name: "Flautas de Carne (Orden de 3 piezas)", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false, emoji: "🌮" },
             { id: "flautas_mixtas", name: "Flautas Mixtas (Orden de 3 piezas)", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false, emoji: "🌮", isFlautasMixtas: true },
-            { id: "flauta_individual", name: "Flauta individual (1 pieza)", category: "Antojitos", price: 25, img: "flautas.jpg", hasTakeout: false, emoji: "🌮", options: ["Pollo", "Carne"] },
+            { id: "flauta_individual", name: "Flauta individual (1 pieza)", category: "Antojitos", price: 25, img: "flautas.jpg", hasTakeout: false, emoji: "🌮", options: ["Pollo", "Carne", "Quesillo"] },
 
-            { id: "gordita_chicharron", name: "Gordita clásica (Chicharrón prensado)", category: "Antojitos", price: 35, options: ["Quesillo", "Carne", "Pollo"], img: "gordita.jpg", hasTakeout: false, isMulti: true, emoji: "🫓" },
-            { id: "gordita_quesillo", name: "Gordita de Quesillo", category: "Antojitos", price: 35, options: ["Carne", "Pollo"], img: "gordita.jpg", hasTakeout: false, isMulti: true, emoji: "🫓" },
-            { id: "gordita_carne", name: "Gordita de Carne", category: "Antojitos", price: 35, options: ["Quesillo", "Pollo"], img: "gordita.jpg", hasTakeout: false, isMulti: true, emoji: "🫓" },
-            { id: "gordita_pollo", name: "Gordita de Pollo", category: "Antojitos", price: 35, options: ["Quesillo", "Carne"], img: "gordita.jpg", hasTakeout: false, isMulti: true, emoji: "🫓" },
+            // GORDITAS (Actualizadas con quesillo como extra y nuevos botones)
+            { id: "gordita_chicharron", name: "Gordita clásica (Chicharrón prensado)", category: "Antojitos", price: 35, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐷" },
+            { id: "gordita_carne", name: "Gordita de Carne", category: "Antojitos", price: 35, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐮", defaultNotes: "Sin chicharrón" },
+            { id: "gordita_pollo", name: "Gordita de Pollo", category: "Antojitos", price: 35, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐤", defaultNotes: "Sin chicharrón" },
+            { id: "gordita_chicharron_pollo", name: "Gordita de chicharrón con pollo", category: "Antojitos", price: 35, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐷" },
+            { id: "gordita_chicharron_carne", name: "Gordita de chicharrón con carne", category: "Antojitos", price: 35, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐷" },
 
+            // QUESADILLAS
             { id: "quesadilla_quesillo", name: "Quesadilla de Quesillo", category: "Antojitos", price: 30, options: ["Hongos", "Flor", "Carne", "Pollo"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🧀" },
             { id: "quesadilla_carne", name: "Quesadilla de Carne", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos", "Flor"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🧀" },
             { id: "quesadilla_chicharron", name: "Quesadilla de Chicharrón", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🧀" },
@@ -470,14 +473,14 @@
                 notesField.style.display = "none";
                 renderOptions();
             } else if (!currentItem.isFlautasMixtas && currentItem.options && currentItem.options.length > 0) {
-                document.getElementById('modalInstruction').innerText = "Selecciona una opción:";
+                document.getElementById('modalInstruction').innerText = "Selecciona opciones extra:";
                 renderOptions();
             } else if (!currentItem.isFlautasMixtas) {
                 document.getElementById('modalInstruction').innerText = "";
             }
 
             if (!currentItem.hideNotes) {
-                notesField.value = "";
+                notesField.value = currentItem.defaultNotes || "";
             }
             
             let takeoutCheck = document.getElementById('takeoutCheck');
@@ -544,7 +547,7 @@
                 meatContainer.style.display = "block";
                 container.style.display = "flex";
                 container.innerHTML = currentItem.options.map(opt => `
-                    <div class="option-pill" onclick="toggleOption('${opt}', this)">${opt}</div>
+                    <div class="option-pill" onclick="toggleOption('${opt}', this)">${opt} (+ $5)</div>
                 `).join('');
             } else { 
                 meatContainer.style.display = "none";
@@ -555,7 +558,7 @@
             if (currentItem.isPambazo) {
                 if (opt === "Sin papa" || opt === "Papa con chorizo") {
                     document.querySelectorAll('#meatOptions .option-pill').forEach(p => {
-                        if (p.innerText === "Sin papa" || p.innerText === "Papa con chorizo") p.classList.remove('active');
+                        if (p.innerText.includes("Sin papa") || p.innerText.includes("Papa con chorizo")) p.classList.remove('active');
                     });
                     selectedOptions = selectedOptions.filter(o => o !== "Sin papa" && o !== "Papa con chorizo");
                     selectedOptions.push(opt);
@@ -578,9 +581,13 @@
                     el.classList.add('active');
                 }
             } else {
-                selectedOptions = [opt];
-                document.querySelectorAll('#meatOptions .option-pill').forEach(p => p.classList.remove('active'));
-                el.classList.add('active');
+                if (selectedOptions.includes(opt)) {
+                    selectedOptions = selectedOptions.filter(o => o !== opt);
+                    el.classList.remove('active');
+                } else {
+                    selectedOptions.push(opt);
+                    el.classList.add('active');
+                }
             }
         }
 
@@ -610,7 +617,7 @@
                     if (opt === "Pollo" || opt === "Carne") price += 10;
                     else if (opt === "Quesillo") price += 5;
                 });
-            } else if (currentItem.isMulti) {
+            } else {
                 price += selectedOptions.length * 5;
             }
 
