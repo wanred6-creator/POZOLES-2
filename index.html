@@ -176,7 +176,7 @@
             </div>
 
             <div id="meatContainer" style="margin-top:10px; display:none;">
-                <label style="font-size:0.8rem; font-weight:bold; color:#555;" id="optionsLabel">Opciones:</label>
+                <label style="font-size:0.8rem; font-weight:bold; color:#555;" id="optionsLabel">Adicional opcional:</label>
                 <div id="meatOptions" style="display:flex; flex-direction:column; gap:6px; margin-top:5px"></div>
             </div>
 
@@ -315,27 +315,31 @@
             { id: "quesadilla_hongos", name: "Quesadilla de Hongos", category: "Antojitos", price: 30, options: ["Quesillo"], img: "quesadilla.jpg", hasTakeout: false, emoji: "🍄" },
             { id: "quesadilla_pollo", name: "Quesadilla de Pollo", category: "Antojitos", price: 30, options: ["Quesillo"], img: "quesadilla.jpg", hasTakeout: false, emoji: "🐤" },
 
-            // PAMBAZO
-            { id: "pambazo", name: "Pambazo", category: "Antojitos", price: 35, options: ["🍃 Sin papa", "🥔 Papa con chorizo", "🐤 Pollo", "🐮 Carne", "🧀 Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖" },
+            // PAMBAZOS INDIVIDUALES
+            { id: "pambazo_clasico", name: "Pambazo clásico (papa y chorizo)", category: "Antojitos", price: 35, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🥔", defaultNotes: "(ejemplo: sin lechuga ,sin queso ,sin crema)" },
+            { id: "pambazo_clasico_carne", name: "Pambazo clásico (papa y chorizo) con carne", category: "Antojitos", price: 45, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🥔🐮", defaultNotes: "(ejemplo: sin lechuga ,sin queso ,sin crema)" },
+            { id: "pambazo_clasico_pollo", name: "Pambazo clásico (papa y chorizo) con pollo", category: "Antojitos", price: 45, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🥔🐤", defaultNotes: "(ejemplo: sin lechuga ,sin queso ,sin crema)" },
+            { id: "pambazo_carne", name: "Pambazo de carne (sin papa y chorizo)", category: "Antojitos", price: 35, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🐮", defaultNotes: "(ejemplo: sin lechuga ,sin queso ,sin crema)" },
+            { id: "pambazo_pollo", name: "Pambazo de pollo (sin papa y chorizo)", category: "Antojitos", price: 35, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🐤", defaultNotes: "(ejemplo: sin lechuga ,sin queso ,sin crema)" },
 
             // TOSTADAS
             { id: "tostada_pollo", name: "Tostada de Pollo", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false, emoji: "🐤" },
             { id: "tostada_res", name: "Tostada de Res", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false, emoji: "🐮" },
             { id: "tostada_pata", name: "Tostada de Pata", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false, emoji: "🐷" },
 
-            // 5. BEBIDAS
-            { id: "jamaica_litro", name: "Agua de Jamaica (Litro)", category: "Bebidas", price: 40, img: "jamaica.jpg", hasTakeout: false, emoji: "🥤" },
-            { id: "jamaica_medio", name: "Agua de Jamaica (Medio litro)", category: "Bebidas", price: 20, img: "jamaica.jpg", hasTakeout: false, emoji: "🥤" },
-            { id: "cocacola", name: "Coca-Cola", category: "Bebidas", price: 30, img: "cocacola.jpg", hasTakeout: false, emoji: "🧃" },
-            { id: "jarritos_pina", name: "Jarritos (Piña)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤" },
-            { id: "jarritos_mandarina", name: "Jarritos (Mandarina)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤" },
-            { id: "jarritos_limon", name: "Jarritos (Limón)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤" },
-            { id: "jarritos_uva", name: "Jarritos (Uva)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤" },
-            { id: "jarritos_tamarindo", name: "Jarritos (Tamarindo)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤" },
-            { id: "jarritos_tutifruti", name: "Jarritos (Tutifruti)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤" },
-            { id: "boing_mango", name: "Boing de Mango", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false, emoji: "🧃" },
-            { id: "boing_manzana", name: "Boing de Manzana", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false, emoji: "🧃" },
-            { id: "boing_guayaba", name: "Boing de Guayaba", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false, emoji: "🧃" },
+            // 5. BEBIDAS (Sin observaciones)
+            { id: "jamaica_litro", name: "Agua de Jamaica (Litro)", category: "Bebidas", price: 40, img: "jamaica.jpg", hasTakeout: false, emoji: "🥤", hideNotes: true },
+            { id: "jamaica_medio", name: "Agua de Jamaica (Medio litro)", category: "Bebidas", price: 20, img: "jamaica.jpg", hasTakeout: false, emoji: "🥤", hideNotes: true },
+            { id: "cocacola", name: "Coca-Cola", category: "Bebidas", price: 30, img: "cocacola.jpg", hasTakeout: false, emoji: "🧃", hideNotes: true },
+            { id: "jarritos_pina", name: "Jarritos (Piña)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤", hideNotes: true },
+            { id: "jarritos_mandarina", name: "Jarritos (Mandarina)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤", hideNotes: true },
+            { id: "jarritos_limon", name: "Jarritos (Limón)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤", hideNotes: true },
+            { id: "jarritos_uva", name: "Jarritos (Uva)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤", hideNotes: true },
+            { id: "jarritos_tamarindo", name: "Jarritos (Tamarindo)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤", hideNotes: true },
+            { id: "jarritos_tutifruti", name: "Jarritos (Tutifruti)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤", hideNotes: true },
+            { id: "boing_mango", name: "Boing de Mango", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false, emoji: "🧃", hideNotes: true },
+            { id: "boing_manzana", name: "Boing de Manzana", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false, emoji: "🧃", hideNotes: true },
+            { id: "boing_guayaba", name: "Boing de Guayaba", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false, emoji: "🧃", hideNotes: true },
             { id: "cafe", name: "Café", category: "Bebidas", price: 20, options: ["Leche"], img: "cafe.jpg", hasTakeout: false, emoji: "☕", hideNotes: true }
         ];
 
@@ -465,7 +469,6 @@
             }
 
             if (currentItem.isPambazo) {
-                document.getElementById('modalInstruction').innerText = "Elige el término (ingrediente extra +$10)";
                 pambazoStyleContainer.style.display = "block";
                 selectedPambazoStyle = "Normal";
                 const estilos = ["Normal", "Dorado"];
@@ -473,7 +476,7 @@
                     <div class="option-pill ${est === selectedPambazoStyle ? 'active' : ''}" onclick="selectPambazoStyle('${est}', this)">${est}</div>`).join('');
                 renderOptions();
             } else if (!currentItem.isFlautasMixtas && currentItem.options && currentItem.options.length > 0) {
-                document.getElementById('modalInstruction').innerText = "Selecciona ingredientes o adicionales:";
+                document.getElementById('modalInstruction').innerText = "Adicional opcional:";
                 renderOptions();
             } else if (!currentItem.isFlautasMixtas) {
                 document.getElementById('modalInstruction').innerText = "";
@@ -555,31 +558,12 @@
         }
 
         function toggleOption(opt, el) {
-            if (currentItem.isPambazo) {
-                if (opt.includes("Sin papa") || opt.includes("Papa con chorizo")) {
-                    document.querySelectorAll('#meatOptions .option-pill').forEach(p => {
-                        if (p.innerText.includes("Sin papa") || p.innerText.includes("Papa con chorizo")) p.classList.remove('active');
-                    });
-                    selectedOptions = selectedOptions.filter(o => !o.includes("Sin papa") && !o.includes("Papa con chorizo"));
-                    selectedOptions.push(opt);
-                    el.classList.add('active');
-                } else {
-                    if (selectedOptions.includes(opt)) {
-                        selectedOptions = selectedOptions.filter(o => o !== opt);
-                        el.classList.remove('active');
-                    } else {
-                        selectedOptions.push(opt);
-                        el.classList.add('active');
-                    }
-                }
+            if (selectedOptions.includes(opt)) {
+                selectedOptions = selectedOptions.filter(o => o !== opt);
+                el.classList.remove('active');
             } else {
-                if (selectedOptions.includes(opt)) {
-                    selectedOptions = selectedOptions.filter(o => o !== opt);
-                    el.classList.remove('active');
-                } else {
-                    selectedOptions.push(opt);
-                    el.classList.add('active');
-                }
+                selectedOptions.push(opt);
+                el.classList.add('active');
             }
         }
 
@@ -606,8 +590,7 @@
             if (currentItem.isPambazo) {
                 finalName = `${currentItem.name} (${selectedPambazoStyle})`;
                 selectedOptions.forEach(opt => {
-                    if (opt.includes("Pollo") || opt.includes("Carne")) price += 10;
-                    else if (opt.includes("Quesillo")) price += 5;
+                    if (opt.includes("Quesillo")) price += 5;
                 });
             } else {
                 price += selectedOptions.length * 5;
