@@ -33,7 +33,6 @@
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 100; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 440px; padding: 20px; border-radius: 12px; max-height: 90vh; overflow-y: auto; }
         
-        /* Estilos de la tabla de la cuenta */
         .cart-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; gap: 8px; }
         .cart-row-info { flex: 1; min-width: 0; }
         .cart-row-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
@@ -176,7 +175,10 @@
             </div>
 
             <div id="takeoutContainer" style="margin-top:15px; display:none;"><label style="font-weight:bold"><input type="checkbox" id="takeoutCheck"> Para llevar (+$5)</label></div>
+            
+            <!-- Campo de observaciones con placeholder -->
             <textarea id="itemNotes" style="width:100%; padding:10px; margin-top:10px; border:1px solid #ccc; border-radius:8px;" placeholder="Observaciones (ej. sin lechuga ,sin queso ,sin crema)"></textarea>
+            
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button style="flex:1; padding:10px; border-radius:8px; border:none; background:#eee" onclick="document.getElementById('customModal').style.display='none'">Cancelar</button>
                 <button style="flex:1; padding:10px; border-radius:8px; border:none; background:#d9534f; color:white" onclick="agregarAlCarrito()">Agregar</button>
@@ -184,14 +186,13 @@
         </div>
     </div>
 
-    <!-- MODAL DE CARRITO / CUENTA CON SUMAS Y COLUMNA DE COSTOS -->
+    <!-- MODAL DE CARRITO / CUENTA -->
     <div class="modal" id="cartModal">
         <div class="modal-content">
             <h3 id="cartModalTitle">Pedido</h3>
             
             <div id="cartItemsList" style="margin: 15px 0;"></div>
             
-            <!-- Resumen con suma de items e importe total -->
             <div style="display:flex; justify-content:space-between; align-items:center; font-weight:bold; font-size:1rem; padding-top:8px; border-top:2px solid #ddd; margin-bottom:12px; color:#333;">
                 <span id="cartTotalItemsText" style="font-size:0.9rem; color:#555;">Total productos: 0</span>
                 <span>Subtotal: <span id="cartSubtotal" style="color:#d9534f; font-size:1.15rem;">$0</span></span>
@@ -305,8 +306,8 @@
             { id: "gordita_chicharron", name: "Gordita clásica (Chicharrón prensado)", category: "Antojitos", price: 35, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐷" },
             { id: "gordita_chicharron_pollo", name: "Gordita de chicharrón con pollo", category: "Antojitos", price: 45, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐷🐤" },
             { id: "gordita_chicharron_carne", name: "Gordita de chicharrón con carne", category: "Antojitos", price: 45, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐷🐮" },
-            { id: "gordita_carne", name: "Gordita de carne ( sin chicharrón)", category: "Antojitos", price: 40, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐮", defaultNotes: "(ejemplo: sin lechuga ,sin queso ,sin crema)" },
-            { id: "gordita_pollo", name: "Gordita de pollo ( sin chicharrón)", category: "Antojitos", price: 40, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐤", defaultNotes: "(ejemplo: sin lechuga ,sin queso ,sin crema)" },
+            { id: "gordita_carne", name: "Gordita de carne (sin chicharrón)", category: "Antojitos", price: 40, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐮" },
+            { id: "gordita_pollo", name: "Gordita de pollo (sin chicharrón)", category: "Antojitos", price: 40, options: ["Quesillo"], img: "gordita.jpg", hasTakeout: false, emoji: "🐤" },
 
             // QUESADILLAS
             { id: "quesadilla_quesillo", name: "Quesadilla de Quesillo", category: "Antojitos", price: 30, img: "quesadilla.jpg", hasTakeout: false, emoji: "🧀" },
@@ -316,11 +317,11 @@
             { id: "quesadilla_pollo", name: "Quesadilla de Pollo", category: "Antojitos", price: 30, options: ["Quesillo"], img: "quesadilla.jpg", hasTakeout: false, emoji: "🐤" },
 
             // PAMBAZOS INDIVIDUALES
-            { id: "pambazo_clasico", name: "Pambazo clásico (papa y chorizo)", category: "Antojitos", price: 35, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🥔", defaultNotes: "(ejemplo: sin lechuga ,sin queso ,sin crema)" },
-            { id: "pambazo_clasico_carne", name: "Pambazo clásico (papa y chorizo) con carne", category: "Antojitos", price: 45, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🥔🐮", defaultNotes: "(ejemplo: sin lechuga ,sin queso ,sin crema)" },
-            { id: "pambazo_clasico_pollo", name: "Pambazo clásico (papa y chorizo) con pollo", category: "Antojitos", price: 45, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🥔🐤", defaultNotes: "(ejemplo: sin lechuga ,sin queso ,sin crema)" },
-            { id: "pambazo_carne", name: "Pambazo de carne (sin papa y chorizo)", category: "Antojitos", price: 35, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🐮", defaultNotes: "(ejemplo: sin lechuga ,sin queso ,sin crema)" },
-            { id: "pambazo_pollo", name: "Pambazo de pollo (sin papa y chorizo)", category: "Antojitos", price: 35, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🐤", defaultNotes: "(ejemplo: sin lechuga ,sin queso ,sin crema)" },
+            { id: "pambazo_clasico", name: "Pambazo clásico (papa y chorizo)", category: "Antojitos", price: 35, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🥔" },
+            { id: "pambazo_clasico_carne", name: "Pambazo clásico (papa y chorizo) con carne", category: "Antojitos", price: 45, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🥔🐮" },
+            { id: "pambazo_clasico_pollo", name: "Pambazo clásico (papa y chorizo) con pollo", category: "Antojitos", price: 45, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🥔🐤" },
+            { id: "pambazo_carne", name: "Pambazo de carne (sin papa y chorizo)", category: "Antojitos", price: 35, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🐮" },
+            { id: "pambazo_pollo", name: "Pambazo de pollo (sin papa y chorizo)", category: "Antojitos", price: 35, options: ["Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖🐤" },
 
             // TOSTADAS
             { id: "tostada_pollo", name: "Tostada de Pollo", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false, emoji: "🐤" },
@@ -476,8 +477,10 @@
                 document.getElementById('modalInstruction').innerText = "";
             }
 
+            // Usar placeholder sin sobreescribir el valor (el área inicia vacía)
             if (!currentItem.hideNotes) {
-                notesField.value = currentItem.defaultNotes || "";
+                notesField.value = "";
+                notesField.placeholder = "Observaciones (ej. sin lechuga ,sin queso ,sin crema)";
             }
             
             let takeoutCheck = document.getElementById('takeoutCheck');
@@ -595,7 +598,10 @@
             let combinedOptions = [...selectedOptions];
             if (extraInfo) combinedOptions.push(extraInfo);
 
-            const notes = currentItem.hideNotes ? "" : document.getElementById('itemNotes').value;
+            // Solo guardar notas si el usuario realmente escribió algo en el textarea
+            let rawNotes = currentItem.hideNotes ? "" : document.getElementById('itemNotes').value.trim();
+            const notes = rawNotes !== "" ? rawNotes : "";
+
             const key = currentItem.id + (selectedSize ? selectedSize.name : '') + selectedPambazoStyle + combinedOptions.join(',') + takeout + notes;
             
             if (!carts[activeTable]) carts[activeTable] = {};
@@ -647,11 +653,15 @@
                     totalCost += lineTotal;
                     totalItems += item.qty;
 
+                    let detailsText = '';
+                    if (item.options && item.options.length > 0) detailsText += item.options.join(' + ');
+                    if (item.notes) detailsText += (detailsText ? ' | ' : '') + item.notes;
+
                     return `
                     <div class="cart-row">
                         <div class="cart-row-info">
                             <b>${item.name}</b><br>
-                            <small style="color:#666;">${item.options.join(' + ') || ''} ${item.notes || ''}</small>
+                            ${detailsText ? `<small style="color:#666;">${detailsText}</small>` : ''}
                         </div>
                         <div class="cart-row-controls">
                             <button class="qty-btn" onclick="ajustarQty('${location}', '${k}', -1)">-</button>
@@ -659,7 +669,7 @@
                             <button class="qty-btn" onclick="ajustarQty('${location}', '${k}', 1)">+</button>
                         </div>
                         <div class="cart-row-subtotal">$${lineTotal}</div>
-                    </div>`;
+                    `;
                 }).join('');
             }
 
