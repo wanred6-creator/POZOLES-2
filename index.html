@@ -86,8 +86,7 @@
         </div>
 
         <div style="background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 15px; border: 1px solid #ddd;">
-            <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #333;">🍅 Control de Platillos e Ingredientes Agotados:</h4>
-            <p style="font-size: 0.75rem; color: #666; margin-bottom: 8px;">Marca un platillo completo o sus ingredientes específicos:</p>
+            <h4 style="font-size: 0.9rem; margin-bottom: 6px; color: #333;">🍅 Control de Platillos Agotados:</h4>
             <div id="adminOptionsList" style="max-height: 280px; overflow-y: auto;"></div>
         </div>
 
@@ -122,22 +121,18 @@
         <div style="font-size: 1.1rem; background: rgba(0,0,0,0.15); padding: 5px 10px; border-radius: 8px;" id="barTotalText">$0</div>
     </div>
 
+    <!-- MODAL PARA NOTAS Y EXTRAS -->
     <div class="modal" id="customModal">
         <div class="modal-content">
             <h3 id="modalItemName"></h3>
             <p id="modalInstruction" style="font-size:0.8rem; color:#666; margin-top:5px;"></p>
             
-            <div id="sizeContainer" style="margin-top:10px; display:none;">
-                <label style="font-size:0.8rem; font-weight:bold; color:#555;" id="sizeLabel">Tamaño:</label>
-                <div id="sizeOptions" style="display:flex; gap:8px; margin-top:5px"></div>
-            </div>
-
             <div id="pambazoStyleContainer" style="margin-top:10px; display:none;">
                 <label style="font-size:0.8rem; font-weight:bold; color:#555;">Término de cocinado:</label>
                 <div id="pambazoStyleOptions" style="display:flex; gap:8px; margin-top:5px"></div>
             </div>
 
-            <div id="meatContainer" style="margin-top:10px;">
+            <div id="meatContainer" style="margin-top:10px; display:none;">
                 <label style="font-size:0.8rem; font-weight:bold; color:#555;" id="optionsLabel">Opciones:</label>
                 <div id="meatOptions" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:5px"></div>
             </div>
@@ -197,15 +192,14 @@
             
             <div class="pay-method-grid">
                 <button type="button" class="pay-btn active" id="btnEfectivo" onclick="seleccionarMetodo('Efectivo')">💵 Efectivo</button>
-                <button type="button" class="pay-btn" id="btnBBVA" onclick="seleccionarMetodo('Transferencia - BBVA')">🏦 BBVA<br><span style="font-size:0.55rem; font-weight:normal; opacity:0.8;">(toca aqui para mostrar cuenta clabe)</span></button>
-                <button type="button" class="pay-btn" id="btnNu" onclick="seleccionarMetodo('Transferencia - Nu')">🏦 Nu México<br><span style="font-size:0.55rem; font-weight:normal; opacity:0.8;">(toca aqui para mostrar cuenta clabe)</span></button>
-                <button type="button" class="pay-btn" id="btnAztecaT" onclick="seleccionarMetodo('Transferencia - Banco Azteca')">🏦 Banco Azteca<br><span style="font-size:0.55rem; font-weight:normal; opacity:0.8;">(toca aqui para mostrar cuenta clabe)</span></button>
+                <button type="button" class="pay-btn" id="btnBBVA" onclick="seleccionarMetodo('Transferencia - BBVA')">🏦 BBVA</button>
+                <button type="button" class="pay-btn" id="btnNu" onclick="seleccionarMetodo('Transferencia - Nu')">🏦 Nu México</button>
+                <button type="button" class="pay-btn" id="btnAztecaT" onclick="seleccionarMetodo('Transferencia - Banco Azteca')">🏦 Banco Azteca</button>
                 <button type="button" class="pay-btn" id="btnCodi" onclick="seleccionarMetodo('CoDi')">📱 CoDi QR</button>
                 <button type="button" class="pay-btn" id="btnAztecaQR" onclick="seleccionarMetodo('Banco Azteca (QR)')">🟢 Azteca (QR)</button>
             </div>
 
             <div id="paymentDetailsContainer" style="margin-bottom:12px;"></div>
-
             <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;" onchange="procesarFotoEscaneada()">
 
             <button style="width:100%; padding:14px; background:#d9534f; color:white; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer; margin-bottom:8px;" onclick="confirmarPagoYTerminarVisita()">✅ Confirmar Pago y Cerrar Mesa</button>
@@ -235,41 +229,74 @@
             }
         }
 
+        // MENÚ COMPLETO CON VARIANTES DIRECTAS Y ORDEN DE PRIORIDAD
         const menu = [
-            { id: 1, name: "Pozole", category: "Pozoles y Caldos", sizes: [{name: "Chica", price: 80}, {name: "Grande", price: 100}], options: ["Pollo", "Maciza", "Cabeza", "Surtida"], img: "pozole.jpg", hasTakeout: true, isMulti: false },
-            { id: 13, name: "Tostadas extras", category: "Pozoles y Caldos", price: 2, options: [], img: "tostada_extra.jpg", hasTakeout: false, isMulti: false },
-            { id: 14, name: "Crema extra", category: "Pozoles y Caldos", price: 10, options: [], img: "crema.jpg", hasTakeout: false, isMulti: false },
-            { id: 2, name: "Pancita", category: "Pozoles y Caldos", sizes: [{name: "Chica", price: 80}, {name: "Grande", price: 100}], options: [], img: "pancita.jpg", hasTakeout: true, isMulti: false },
-            { id: 3, name: "Flautas", category: "Antojitos", price: 75, options: ["Pollo", "Carne"], img: "flautas.jpg", hasTakeout: false, isMulti: false },
-            { 
-                id: 4, 
-                name: "Gordita", 
-                category: "Antojitos", 
-                price: 35, 
-                gorditaBases: [
-                    { name: "Gordita clásica (de chicharrón prensado)", price: 35 },
-                    { name: "Gordita sin chicharrón (elegir ingrediente sustituto)", price: 35 }
-                ],
-                options: ["Quesillo", "Carne", "Pollo"], 
-                img: "gordita.jpg", 
-                hasTakeout: false, 
-                isGordita: true 
-            },
-            { id: 5, name: "Quesadilla", category: "Antojitos", price: 30, options: ["Quesillo", "Carne", "Chicharrón", "Hongos", "Flor", "Pollo"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
-            { id: 6, name: "Pambazo", category: "Antojitos", price: 35, options: ["Sin papa", "Papa con chorizo", "Pollo", "Carne", "Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, isMulti: true },
-            { id: 7, name: "Tostada", category: "Antojitos", price: 30, options: ["Pollo", "Res", "Pata"], img: "tostada.jpg", hasTakeout: false, isMulti: false },
-            { id: 8, name: "Agua de Jamaica", category: "Bebidas", price: 40, options: ["Litro ($40)", "Medio litro ($20)"], img: "jamaica.jpg", hasTakeout: false, isMulti: false },
-            { id: 9, name: "Coca-Cola", category: "Bebidas", price: 30, options: [], img: "cocacola.jpg", hasTakeout: false, isMulti: false },
-            { id: 10, name: "Jarritos", category: "Bebidas", price: 30, options: ["Piña", "Mandarina", "Limón", "Uva", "Tamarindo", "Tutifruti"], img: "jarritos.jpg", hasTakeout: false, isMulti: false },
-            { id: 11, name: "Boing", category: "Bebidas", price: 30, options: ["Mango", "Manzana", "Guayaba"], img: "boing.jpg", hasTakeout: false, isMulti: false },
-            { id: 12, name: "Café", category: "Bebidas", price: 20, options: [], img: "cafe.jpg", hasTakeout: false, isMulti: false }
+            // 1. POZOLES Y SUS VARIANTES
+            { id: "poz_ch_maciza", name: "Pozole Chico (Maciza)", category: "Pozoles y Caldos", price: 80, img: "pozole.jpg", hasTakeout: true },
+            { id: "poz_ch_surtida", name: "Pozole Chico (Surtida)", category: "Pozoles y Caldos", price: 80, img: "pozole.jpg", hasTakeout: true },
+            { id: "poz_ch_pollo", name: "Pozole Chico (Pollo)", category: "Pozoles y Caldos", price: 80, img: "pozole.jpg", hasTakeout: true },
+            { id: "poz_ch_cabeza", name: "Pozole Chico (Cabeza)", category: "Pozoles y Caldos", price: 80, img: "pozole.jpg", hasTakeout: true },
+            { id: "poz_ch_sin", name: "Pozole Chico (Sin carne)", category: "Pozoles y Caldos", price: 80, img: "pozole.jpg", hasTakeout: true },
+
+            { id: "poz_gr_maciza", name: "Pozole Grande (Maciza)", category: "Pozoles y Caldos", price: 100, img: "pozole.jpg", hasTakeout: true },
+            { id: "poz_gr_surtida", name: "Pozole Grande (Surtida)", category: "Pozoles y Caldos", price: 100, img: "pozole.jpg", hasTakeout: true },
+            { id: "poz_gr_pollo", name: "Pozole Grande (Pollo)", category: "Pozoles y Caldos", price: 100, img: "pozole.jpg", hasTakeout: true },
+            { id: "poz_gr_cabeza", name: "Pozole Grande (Cabeza)", category: "Pozoles y Caldos", price: 100, img: "pozole.jpg", hasTakeout: true },
+            { id: "poz_gr_sin", name: "Pozole Grande (Sin carne)", category: "Pozoles y Caldos", price: 100, img: "pozole.jpg", hasTakeout: true },
+
+            // 2. COMPLEMENTOS DE POZOLE
+            { id: "tostadas_extras", name: "Tostadas extras", category: "Pozoles y Caldos", price: 2, img: "tostada_extra.jpg", hasTakeout: false },
+            { id: "crema_extra", name: "Crema extra", category: "Pozoles y Caldos", price: 10, img: "crema.jpg", hasTakeout: false },
+
+            // 3. PANCITA Y SUS VARIANTES
+            { id: "pancita_chica", name: "Pancita Chica", category: "Pozoles y Caldos", price: 80, img: "pancita.jpg", hasTakeout: true },
+            { id: "pancita_grande", name: "Pancita Grande", category: "Pozoles y Caldos", price: 100, img: "pancita.jpg", hasTakeout: true },
+
+            // 4. ANTOJITOS Y SUS VARIANTES
+            { id: "flautas_pollo", name: "Flautas de Pollo", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false },
+            { id: "flautas_carne", name: "Flautas de Carne", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false },
+
+            { id: "gordita_chicharron", name: "Gordita clásica (Chicharrón prensado)", category: "Antojitos", price: 35, options: ["Quesillo", "Carne", "Pollo"], img: "gordita.jpg", hasTakeout: false, isMulti: true },
+            { id: "gordita_quesillo", name: "Gordita de Quesillo", category: "Antojitos", price: 35, options: ["Carne", "Pollo"], img: "gordita.jpg", hasTakeout: false, isMulti: true },
+            { id: "gordita_carne", name: "Gordita de Carne", category: "Antojitos", price: 35, options: ["Quesillo", "Pollo"], img: "gordita.jpg", hasTakeout: false, isMulti: true },
+            { id: "gordita_pollo", name: "Gordita de Pollo", category: "Antojitos", price: 35, options: ["Quesillo", "Carne"], img: "gordita.jpg", hasTakeout: false, isMulti: true },
+
+            { id: "quesadilla_quesillo", name: "Quesadilla de Quesillo", category: "Antojitos", price: 30, options: ["Hongos", "Flor", "Carne", "Pollo"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
+            { id: "quesadilla_carne", name: "Quesadilla de Carne", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos", "Flor"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
+            { id: "quesadilla_chicharron", name: "Quesadilla de Chicharrón", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
+            { id: "quesadilla_hongos", name: "Quesadilla de Hongos", category: "Antojitos", price: 30, options: ["Quesillo", "Flor"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
+            { id: "quesadilla_flor", name: "Quesadilla de Flor de Calabaza", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
+            { id: "quesadilla_pollo", name: "Quesadilla de Pollo", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
+
+            { id: "pambazo", name: "Pambazo", category: "Antojitos", price: 35, options: ["Sin papa", "Papa con chorizo", "Pollo", "Carne", "Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true },
+
+            { id: "tostada_pollo", name: "Tostada de Pollo", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false },
+            { id: "tostada_res", name: "Tostada de Res", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false },
+            { id: "tostada_pata", name: "Tostada de Pata", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false },
+
+            // 5. BEBIDAS Y SUS VARIANTES
+            { id: "jamaica_litro", name: "Agua de Jamaica (Litro)", category: "Bebidas", price: 40, img: "jamaica.jpg", hasTakeout: false },
+            { id: "jamaica_medio", name: "Agua de Jamaica (Medio litro)", category: "Bebidas", price: 20, img: "jamaica.jpg", hasTakeout: false },
+
+            { id: "cocacola", name: "Coca-Cola", category: "Bebidas", price: 30, img: "cocacola.jpg", hasTakeout: false },
+
+            { id: "jarritos_pina", name: "Jarritos (Piña)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
+            { id: "jarritos_mandarina", name: "Jarritos (Mandarina)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
+            { id: "jarritos_limon", name: "Jarritos (Limón)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
+            { id: "jarritos_uva", name: "Jarritos (Uva)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
+            { id: "jarritos_tamarindo", name: "Jarritos (Tamarindo)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
+            { id: "jarritos_tutifruti", name: "Jarritos (Tutifruti)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
+
+            { id: "boing_mango", name: "Boing de Mango", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false },
+            { id: "boing_manzana", name: "Boing de Manzana", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false },
+            { id: "boing_guayaba", name: "Boing de Guayaba", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false },
+
+            { id: "cafe", name: "Café de Olla", category: "Bebidas", price: 20, img: "cafe.jpg", hasTakeout: false }
         ];
 
         let carts = JSON.parse(localStorage.getItem('cartsData')) || { "Mesa 1": {}, "Mesa 2": {}, "Mesa 3": {}, "Mesa 4": {}, "Para llevar": {} };
         let activeTable = "Mesa 1";
         let currentCartLocation = "Mesa 1";
-        let selectedSize = null;
-        let selectedGorditaBase = null;
         let selectedPambazoStyle = "Normal";
         let selectedOptions = []; 
         let currentItem = null;
@@ -290,15 +317,10 @@
             if (menuContainer) {
                 menuContainer.innerHTML = menu.map(item => {
                     let isSoldOut = soldOut["ITEM_" + item.name];
-                    let priceText = "";
-                    if (isSoldOut) {
-                        priceText = `<span style="color:#d9534f; font-weight:bold; font-size:0.75rem;">No disponible por el momento</span>`;
-                    } else {
-                        priceText = (item.id === 1) ? '$100' : (item.sizes ? 'Desde $' + item.sizes[0].price : '$' + item.price + '.00');
-                    }
+                    let priceText = isSoldOut ? `<span style="color:#d9534f; font-weight:bold; font-size:0.75rem;">No disponible por el momento</span>` : `$${item.price}.00`;
 
                     return `
-                    <div class="menu-item ${isSoldOut ? 'sold-out' : ''}" onclick="${isSoldOut ? '' : `abrirModal(${item.id})`}">
+                    <div class="menu-item ${isSoldOut ? 'sold-out' : ''}" onclick="${isSoldOut ? '' : `abrirModal('${item.id}')`}">
                         <div style="display:flex; align-items:center; gap:10px">
                             <img src="${item.img}" class="menu-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'75\\' height=\\'75\\'><rect width=\\'75\\' height=\\'75\\' fill=\\'%23eee\\'/></svg>'">
                             <div>
@@ -346,39 +368,16 @@
             selectedOptions = [];
             document.getElementById('modalItemName').innerText = `${currentItem.name} (${activeTable})`;
             
-            const sizeContainer = document.getElementById('sizeContainer');
-            const sizeOptionsDiv = document.getElementById('sizeOptions');
             const pambazoStyleContainer = document.getElementById('pambazoStyleContainer');
             const pambazoStyleOptionsDiv = document.getElementById('pambazoStyleOptions');
             const meatContainer = document.getElementById('meatContainer');
             const notesField = document.getElementById('itemNotes');
-            let soldOut = {};
-            try {
-                soldOut = JSON.parse(localStorage.getItem('soldOutOptions')) || {};
-            } catch (e) {
-                soldOut = {};
-            }
 
-            sizeContainer.style.display = "none";
             pambazoStyleContainer.style.display = "none";
             notesField.style.display = "block";
 
-            if (currentItem.isGordita) {
-                document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones, ingrediente extra cuesta $5";
-                sizeContainer.style.display = "block";
-                document.getElementById('sizeLabel').innerText = "Tipo de Gordita:";
-                selectedGorditaBase = currentItem.gorditaBases[0];
-                sizeOptionsDiv.innerHTML = currentItem.gorditaBases.map(b => {
-                    let key = currentItem.name + "_" + b.name;
-                    if (soldOut[key]) {
-                        return `<div class="option-pill" style="opacity:0.3; text-decoration:line-through; background:#ddd; cursor:not-allowed;"><s>${b.name}</s> (Agotado)</div>`;
-                    }
-                    return `<div class="option-pill ${b.name === selectedGorditaBase.name ? 'active' : ''}" onclick="selectGorditaBase('${b.name}', ${b.price}, this)">${b.name}</div>`;
-                }).join('');
-                document.getElementById('optionsLabel').innerText = "Ingredientes extra (+$5 c/u):";
-                renderOptions();
-            } else if (currentItem.isPambazo) {
-                document.getElementById('modalInstruction').innerText = "Elige el término ( ingrediente extra +$10)";
+            if (currentItem.isPambazo) {
+                document.getElementById('modalInstruction').innerText = "Elige el término (ingrediente extra +$10)";
                 pambazoStyleContainer.style.display = "block";
                 selectedPambazoStyle = "Normal";
                 const estilos = ["Normal", "Dorado"];
@@ -387,29 +386,12 @@
                 document.getElementById('optionsLabel').innerText = "Opciones:";
                 notesField.style.display = "none";
                 renderOptions();
-            } else {
-                if (currentItem.isMulti) {
-                    document.getElementById('modalInstruction').innerText = "Selecciona hasta 2 opciones (el precio base incluye 1, cada ingrediente extra cuesta $5)";
-                } else {
-                    document.getElementById('modalInstruction').innerText = "";
-                }
-
-                document.getElementById('optionsLabel').innerText = "Opciones:";
-                if (currentItem.sizes) {
-                    sizeContainer.style.display = "block";
-                    document.getElementById('sizeLabel').innerText = "Tamaño:";
-                    selectedSize = currentItem.sizes[1]; 
-                    sizeOptionsDiv.innerHTML = currentItem.sizes.map(s => {
-                        let key = currentItem.name + "_" + s.name;
-                        if (soldOut[key]) {
-                            return `<div class="option-pill" style="opacity:0.3; text-decoration:line-through; background:#ddd; cursor:not-allowed;"><s>${s.name}</s> (Agotado)</div>`;
-                        }
-                        return `<div class="option-pill ${s.name === selectedSize.name ? 'active' : ''}" onclick="selectSize('${s.name}', ${s.price}, this)">${s.name} ($${s.price})</div>`;
-                    }).join('');
-                } else {
-                    selectedSize = null;
-                }
+            } else if (currentItem.options && currentItem.options.length > 0) {
+                document.getElementById('modalInstruction').innerText = "Puedes agregar extras (+$5 c/u):";
                 renderOptions();
+            } else {
+                document.getElementById('modalInstruction').innerText = "";
+                meatContainer.style.display = "none";
             }
 
             notesField.value = "";
@@ -423,18 +405,6 @@
 
             document.getElementById('takeoutContainer').style.display = currentItem.hasTakeout ? 'block' : 'none';
             document.getElementById('customModal').style.display = 'flex';
-        }
-
-        function selectSize(name, price, el) {
-            selectedSize = { name, price };
-            document.querySelectorAll('#sizeOptions .option-pill').forEach(p => p.classList.remove('active'));
-            el.classList.add('active');
-        }
-
-        function selectGorditaBase(name, price, el) {
-            selectedGorditaBase = { name, price };
-            document.querySelectorAll('#sizeOptions .option-pill').forEach(p => p.classList.remove('active'));
-            el.classList.add('active');
         }
 
         function selectPambazoStyle(style, el) {
@@ -470,78 +440,55 @@
         }
 
         function toggleOption(opt, el) {
-            if (currentItem.isMulti || currentItem.isGordita || currentItem.isPambazo) {
-                if (currentItem.isPambazo) {
-                    if (opt === "Sin papa" || opt === "Papa con chorizo") {
-                        document.querySelectorAll('#meatOptions .option-pill').forEach(p => {
-                            if (p.innerText === "Sin papa" || p.innerText === "Papa con chorizo") {
-                                p.classList.remove('active');
-                            }
-                        });
-                        selectedOptions = selectedOptions.filter(o => o !== "Sin papa" && o !== "Papa con chorizo");
-                        selectedOptions.push(opt);
-                        el.classList.add('active');
-                    } else {
-                        if (selectedOptions.includes(opt)) {
-                            selectedOptions = selectedOptions.filter(o => o !== opt);
-                            el.classList.remove('active');
-                        } else {
-                            selectedOptions.push(opt);
-                            el.classList.add('active');
+            if (currentItem.isPambazo) {
+                if (opt === "Sin papa" || opt === "Papa con chorizo") {
+                    document.querySelectorAll('#meatOptions .option-pill').forEach(p => {
+                        if (p.innerText === "Sin papa" || p.innerText === "Papa con chorizo") {
+                            p.classList.remove('active');
                         }
-                    }
+                    });
+                    selectedOptions = selectedOptions.filter(o => o !== "Sin papa" && o !== "Papa con chorizo");
+                    selectedOptions.push(opt);
+                    el.classList.add('active');
                 } else {
                     if (selectedOptions.includes(opt)) {
                         selectedOptions = selectedOptions.filter(o => o !== opt);
                         el.classList.remove('active');
-                    } else if (selectedOptions.length < 2) {
+                    } else {
                         selectedOptions.push(opt);
                         el.classList.add('active');
                     }
                 }
-            } else {
-                selectedOptions = [opt];
-                document.querySelectorAll('#meatOptions .option-pill').forEach(p => p.classList.remove('active'));
-                el.classList.add('active');
+            } else if (currentItem.isMulti) {
+                if (selectedOptions.includes(opt)) {
+                    selectedOptions = selectedOptions.filter(o => o !== opt);
+                    el.classList.remove('active');
+                } else if (selectedOptions.length < 2) {
+                    selectedOptions.push(opt);
+                    el.classList.add('active');
+                }
             }
         }
 
         function agregarAlCarrito() {
-            let price = selectedSize ? selectedSize.price : currentItem.price;
+            let price = currentItem.price;
             let finalName = currentItem.name;
             let takeout = document.getElementById('takeoutCheck').checked;
             
-            if (currentItem.isGordita) {
-                price = selectedGorditaBase.price + (selectedOptions.length * 5);
-                finalName = `${currentItem.name} (${selectedGorditaBase.name})`;
-            } else if (currentItem.isPambazo) {
+            if (currentItem.isPambazo) {
                 finalName = `${currentItem.name} (${selectedPambazoStyle})`;
-                price = currentItem.price; 
-                
                 selectedOptions.forEach(opt => {
-                    if (opt === "Pollo" || opt === "Carne") {
-                        price += 10;
-                    } else if (opt === "Quesillo") {
-                        price += 5;
-                    }
+                    if (opt === "Pollo" || opt === "Carne") price += 10;
+                    else if (opt === "Quesillo") price += 5;
                 });
-            } else {
-                if (selectedSize) finalName += ` (${selectedSize.name})`;
-                if (currentItem.name === "Agua de Jamaica" && selectedOptions.includes("Medio litro ($20)")) price = 20;
-                
-                if (currentItem.isMulti) {
-                    if (selectedOptions.length > 1) {
-                        price = currentItem.price + (selectedOptions.length - 1) * 5;
-                    } else {
-                        price = currentItem.price;
-                    }
-                }
+            } else if (currentItem.isMulti) {
+                price += selectedOptions.length * 5;
             }
 
             if (takeout) { price += 5; finalName += " (Llevar)"; }
             
             const notes = currentItem.isPambazo ? "" : document.getElementById('itemNotes').value;
-            const key = currentItem.id + (selectedSize ? selectedSize.name : '') + (selectedGorditaBase ? selectedGorditaBase.name : '') + selectedPambazoStyle + selectedOptions.join(',') + takeout + notes;
+            const key = currentItem.id + selectedPambazoStyle + selectedOptions.join(',') + takeout + notes;
             
             if (!carts[currentCartLocation]) carts[currentCartLocation] = {};
             carts[currentCartLocation][key] = { 
@@ -659,7 +606,6 @@
             document.getElementById('cartModal').style.display = 'none';
             btn.innerHTML = textoOriginal;
             btn.disabled = false;
-
             alert("✅ ¡Pedido enviado a cocina!");
         }
 
@@ -671,14 +617,12 @@
 
             document.getElementById('cartModal').style.display = 'none';
             document.getElementById('paySubtotal').innerText = '$' + subtotalActual;
-
             document.getElementById('tipSelect').value = "0";
             document.getElementById('customTipContainer').style.display = "none";
             document.getElementById('customTipInput').value = "";
 
             seleccionarMetodo('Efectivo');
             actualizarTotalFinal();
-            
             document.getElementById('paymentModal').style.display = 'flex';
         }
 
@@ -697,7 +641,6 @@
 
         function seleccionarMetodo(metodo) {
             metodoPagoActual = metodo;
-            
             document.getElementById('btnEfectivo').classList.toggle('active', metodo === 'Efectivo');
             document.getElementById('btnBBVA').classList.toggle('active', metodo === 'Transferencia - BBVA');
             document.getElementById('btnNu').classList.toggle('active', metodo === 'Transferencia - Nu');
@@ -706,7 +649,6 @@
             document.getElementById('btnAztecaQR').classList.toggle('active', metodo === 'Banco Azteca (QR)');
 
             let container = document.getElementById('paymentDetailsContainer');
-
             if(metodo === 'Efectivo') {
                 container.innerHTML = `
                     <label style="font-size:0.8rem; color:#555;">¿Con cuánto paga el cliente?</label>
@@ -723,133 +665,61 @@
                         <button class="copy-btn" onclick="copiarClabe('${clabeClean}')">Copiar</button>
                     </div>`;
             } else if(metodo === 'CoDi') {
-                container.innerHTML = `
-                    <div style="background:#fdf2f2; padding:12px; border-radius:8px; border:1px solid #d9534f; font-size:0.85rem; text-align:center;">
-                        <p style="font-weight:bold; color:#d9534f; font-size:0.9rem; margin-bottom:6px;">📲 Paga con CoDi®</p>
-                        <p style="color:#444; margin-bottom:10px;">Abre tu cámara para escanear el código QR impreso en la mesa:</p>
-                        <button onclick="dispararCamara()" style="background:#d9534f; color:white; border:none; padding:10px 15px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; font-size:0.9rem;">📷 Abrir Cámara para Escanear QR</button>
-                    </div>`;
+                container.innerHTML = `<button onclick="document.getElementById('cameraInput').click()" style="background:#d9534f; color:white; border:none; padding:10px 15px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; font-size:0.9rem;">📷 Escanear QR CoDi</button>`;
             } else if(metodo === 'Banco Azteca (QR)') {
-                container.innerHTML = `
-                    <div style="background:#f4f9f4; padding:12px; border-radius:8px; border:1px solid #25d366; font-size:0.85rem; text-align:center;">
-                        <p style="font-weight:bold; color:#2e7d32; font-size:0.9rem; margin-bottom:6px;">🟢 Banco Azteca (QR)</p>
-                        <p style="color:#444; margin-bottom:10px;">Abre tu cámara para escanear el código QR o usa los datos:</p>
-                        <button onclick="dispararCamara()" style="background:#2e7d32; color:white; border:none; padding:10px 15px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; font-size:0.9rem; margin-bottom:8px;">📷 Abrir Cámara para Escanear QR</button>
-                        <p style="font-size:0.75rem; color:#333; margin-top:4px;">Beneficiaria: <b>ARACELI PEREZ GARCIA</b></p>
-                        <p style="font-size:0.75rem; color:#333;">Teléfono: <b>(55) 4935 4467</b></p>
-                    </div>`;
-            }
-        }
-
-        function dispararCamara() {
-            document.getElementById('cameraInput').click();
-        }
-
-        function procesarFotoEscaneada() {
-            let input = document.getElementById('cameraInput');
-            if (input.files && input.files.length > 0) {
-                alert("✅ ¡Código QR escaneado con éxito! Ya puedes confirmar el pago.");
+                container.innerHTML = `<button onclick="document.getElementById('cameraInput').click()" style="background:#2e7d32; color:white; border:none; padding:10px 15px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%; font-size:0.9rem;">📷 Escanear QR Azteca</button>`;
             }
         }
 
         function calcularMontoPropina() {
             let tipSelect = document.getElementById('tipSelect').value;
-            if (tipSelect === 'custom') {
-                return parseFloat(document.getElementById('customTipInput').value) || 0;
-            } else {
-                let percent = parseInt(tipSelect) || 0;
-                return Math.round(subtotalActual * (percent / 100));
-            }
+            if (tipSelect === 'custom') return parseFloat(document.getElementById('customTipInput').value) || 0;
+            return Math.round(subtotalActual * ((parseInt(tipSelect) || 0) / 100));
         }
 
         function actualizarTotalFinal() {
-            let tipAmount = calcularMontoPropina();
-            let totalFinal = subtotalActual + tipAmount;
-            
-            let payTotalFinal = document.getElementById('payTotalFinal');
-            if(payTotalFinal) payTotalFinal.innerText = '$' + totalFinal;
+            let totalFinal = subtotalActual + calcularMontoPropina();
+            document.getElementById('payTotalFinal').innerText = '$' + totalFinal;
             if(metodoPagoActual === 'Efectivo') calcularCambio();
         }
 
         function calcularCambio() {
             let cashInput = document.getElementById('cashInput');
             if(!cashInput) return;
-
-            let tipAmount = calcularMontoPropina();
-            let totalFinal = subtotalActual + tipAmount;
-            let pagoCliente = parseFloat(cashInput.value) || 0;
-            let cambio = pagoCliente - totalFinal;
-
-            let changeEl = document.getElementById('changeText');
-            if(changeEl) {
-                changeEl.innerText = cambio >= 0 ? '$' + cambio : 'Faltan $' + Math.abs(cambio);
-            }
+            let cambio = (parseFloat(cashInput.value) || 0) - (subtotalActual + calcularMontoPropina());
+            document.getElementById('changeText').innerText = cambio >= 0 ? '$' + cambio : 'Faltan $' + Math.abs(cambio);
         }
 
         function copiarClabe(clabe) {
-            navigator.clipboard.writeText(clabe).then(() => {
-                alert("¡CLABE copiada al portapapeles: " + clabe + "!");
-            }).catch(err => {
-                alert("CLABE: " + clabe);
-            });
+            navigator.clipboard.writeText(clabe).then(() => alert("¡CLABE copiada!"));
         }
 
         function confirmarPagoYTerminarVisita() {
-            let tipSelect = document.getElementById('tipSelect').value;
             let tipAmount = calcularMontoPropina();
             let totalFinal = subtotalActual + tipAmount;
-
             let fechaActual = new Date().toLocaleDateString();
             let horaActual = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
             let currentCart = carts[currentCartLocation] || {};
-            let resumenProductos = [];
-            for(let k in currentCart) { 
-                let item = currentCart[k];
-                resumenProductos.push(`${item.qty}x ${item.name} ${item.options.length > 0 ? '('+item.options.join(', ')+')' : ''}`);
-            }
-            
-            let resumenTexto = resumenProductos.join(' | ');
-            
+            let resumenProductos = Object.values(currentCart).map(item => `${item.qty}x ${item.name}`).join(' | ');
             let mesaInfo = currentCartLocation + ` [CERRADA] - ${metodoPagoActual}`;
-            let descPropina = "";
-            if (tipSelect === 'custom') {
-                descPropina = `Propina personalizada: +$${tipAmount}`;
-                if (tipAmount > 0) mesaInfo += ` (Propina: $${tipAmount})`;
-            } else {
-                let percent = parseInt(tipSelect);
-                descPropina = `Propina (${percent}%): $${tipAmount}`;
-                if (percent > 0) mesaInfo += ` (Propina: ${percent}% / +$${tipAmount})`;
-            }
 
             if (GOOGLE_SCRIPT_URL) {
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        fecha: fechaActual,
-                        hora: horaActual,
-                        mesa: mesaInfo,
-                        total: totalFinal,
-                        resumen: resumenTexto
-                    })
-                }).catch(err => console.error("Error enviando a Sheets:", err));
+                    body: JSON.stringify({ fecha: fechaActual, hora: horaActual, mesa: mesaInfo, total: totalFinal, resumen: resumenProductos })
+                }).catch(err => console.error(err));
             }
 
             let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
-            history.push({
-                table: mesaInfo,
-                time: horaActual,
-                total: totalFinal,
-                summary: `PAGADO (${metodoPagoActual}) - Subtotal: $${subtotalActual} + ${descPropina}`
-            });
+            history.push({ table: mesaInfo, time: horaActual, total: totalFinal, summary: `PAGADO (${metodoPagoActual})` });
             localStorage.setItem('salesHistory', JSON.stringify(history));
 
             carts[currentCartLocation] = {};
             saveCarts();
             updateBottomButtons();
-
             document.getElementById('paymentModal').style.display = 'none';
             alert("🎉 ¡Mesa cerrada y pagada con éxito!");
         }
@@ -858,18 +728,15 @@
             let history = JSON.parse(localStorage.getItem('salesHistory')) || [];
             let container = document.getElementById('salesHistoryList');
             let totalGeneral = 0;
-
             if (history.length === 0) {
                 container.innerHTML = '<p style="text-align:center; color:#777; font-size:0.8rem;">No hay ventas registradas hoy.</p>';
                 document.getElementById('totalVentasDia').innerText = '$0';
                 return;
             }
-
             container.innerHTML = history.map(h => {
                 totalGeneral += h.total;
-                return `<div class="history-item"><b>[${h.time}] ${h.table}</b> - <span style="color:#25d366; font-weight:bold;">$${h.total}</span><br><span style="color:#555;">${h.summary}</span></div>`;
+                return `<div class="history-item"><b>[${h.time}] ${h.table}</b> - <span style="color:#25d366; font-weight:bold;">$${h.total}</span></div>`;
             }).join('');
-
             document.getElementById('totalVentasDia').innerText = '$' + totalGeneral;
         }
 
@@ -877,120 +744,57 @@
             if (confirm("¿Cerrar el día y borrar el historial local?")) {
                 localStorage.removeItem('salesHistory');
                 cargarHistorialVentas();
-                alert("Historial local reseteado.");
             }
         }
 
         function renderAdminOptionsManager() {
-            let soldOut = {};
-            try {
-                soldOut = JSON.parse(localStorage.getItem('soldOutOptions')) || {};
-            } catch (e) {
-                soldOut = {};
-            }
-            
+            let soldOut = JSON.parse(localStorage.getItem('soldOutOptions')) || {};
             let container = document.getElementById('adminOptionsList');
             if (!container) return;
-            
-            let html = '';
-            menu.forEach(item => {
-                let itemKey = "ITEM_" + item.name;
-                let isItemSoldOut = soldOut[itemKey] ? "checked" : "";
-                
-                html += `<div style="margin-bottom:12px; border-bottom:1px solid #ddd; padding-bottom:8px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                        <b style="font-size:0.85rem; color:#d9534f;">🍲 ${item.name}</b>
-                        <label style="font-size:0.75rem; color:#b52b27; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:4px; background:#fdf2f2; padding:2px 6px; border-radius:4px;">
-                            <input type="checkbox" ${isItemSoldOut} onchange="toggleItemSoldOut('${item.name}', this.checked)"> ❌ Agotado todo el platillo
-                        </label>
-                    </div>`;
-
-                let opts = [];
-                if (item.options && item.options.length > 0) opts = item.options;
-                if (item.gorditaBases) opts = opts.concat(item.gorditaBases.map(b => b.name));
-                if (item.sizes) opts = opts.concat(item.sizes.map(s => s.name));
-                
-                if (opts.length > 0) {
-                    html += `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;">`;
-                    opts.forEach(opt => {
-                        let key = item.name + "_" + opt;
-                        let isChecked = soldOut[key] ? "checked" : "";
-                        html += `<label style="background:#fff; border:1px solid #ddd; padding:4px 8px; border-radius:4px; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; gap:4px;">
-                            <input type="checkbox" ${isChecked} onchange="toggleSoldOut('${item.name}', '${opt}', this.checked)"> ${opt}
-                        </label>`;
-                    });
-                    html += `</div>`;
-                }
-                html += `</div>`;
-            });
-            container.innerHTML = html || '<p style="color:#777; font-size:0.8rem;">No hay opciones configurables.</p>';
+            container.innerHTML = menu.map(item => {
+                let isItemSoldOut = soldOut["ITEM_" + item.name] ? "checked" : "";
+                return `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #ddd; padding-bottom:6px;">
+                    <span style="font-size:0.8rem; font-weight:bold;">${item.name}</span>
+                    <label style="font-size:0.75rem; color:#d9534f; cursor:pointer;"><input type="checkbox" ${isItemSoldOut} onchange="toggleItemSoldOut('${item.name}', this.checked)"> Agotado</label>
+                </div>`;
+            }).join('');
         }
 
         function toggleItemSoldOut(itemName, isSoldOut) {
-            let soldOut = {};
-            try {
-                soldOut = JSON.parse(localStorage.getItem('soldOutOptions')) || {};
-            } catch (e) {
-                soldOut = {};
-            }
-            let key = "ITEM_" + itemName;
-            if (isSoldOut) {
-                soldOut[key] = true;
-            } else {
-                delete soldOut[key];
-            }
+            let soldOut = JSON.parse(localStorage.getItem('soldOutOptions')) || {};
+            if (isSoldOut) soldOut["ITEM_" + itemName] = true;
+            else delete soldOut["ITEM_" + itemName];
             localStorage.setItem('soldOutOptions', JSON.stringify(soldOut));
             renderMenu();
         }
 
-        function toggleSoldOut(itemName, optName, isSoldOut) {
-            let soldOut = {};
-            try {
-                soldOut = JSON.parse(localStorage.getItem('soldOutOptions')) || {};
-            } catch (e) {
-                soldOut = {};
-            }
-            let key = itemName + "_" + optName;
-            if (isSoldOut) {
-                soldOut[key] = true;
-            } else {
-                delete soldOut[key];
-            }
-            localStorage.setItem('soldOutOptions', JSON.stringify(soldOut));
-        }
-
         function pedirPinYEntrar() {
-            let ingreso = prompt("Ingresa el PIN de administrador:");
-            if (ingreso === PIN_ADMIN) { toggleView(); }
-            else if (ingreso !== null) { alert("PIN incorrecto."); }
+            let ingreso = prompt("PIN de administrador:");
+            if (ingreso === PIN_ADMIN) toggleView();
         }
 
         function toggleView() {
             const main = document.getElementById('main-view');
             const stats = document.getElementById('stats-view');
-            
-            let isStatsVisible = stats.style.display === 'block';
-            
-            if (isStatsVisible) {
+            if (stats.style.display === 'block') {
                 stats.style.display = 'none';
                 main.style.display = 'block';
                 renderMenu();
             } else {
                 main.style.display = 'none';
                 stats.style.display = 'block';
-                cargarConfigGuardada(); 
-                cargarHistorialVentas(); 
+                cargarConfigGuardada();
+                cargarHistorialVentas();
                 renderAdminOptionsManager();
             }
         }
 
         function guardarYGenerarQRs() {
             let url = document.getElementById('siteUrlInput').value.trim();
-            if(!url) return alert("Ingresa un enlace válido");
+            if(!url) return alert("Ingresa un enlace");
             if(!url.endsWith('/')) url += '/';
             localStorage.setItem('siteUrl', url);
             mostrarTodosLosQRs(url);
-            alert("¡QRs actualizados!");
         }
 
         function cargarConfigGuardada() {
@@ -1005,7 +809,7 @@
             container.innerHTML = mesas.map(m => {
                 let fullUrl = `${baseUrl}?mesa=${encodeURIComponent(m)}`;
                 let qrImg = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(fullUrl)}`;
-                return `<div class="qr-card"><b>🪑 ${m}</b><br><img src="${qrImg}" style="width: 120px; height: 120px; margin-top: 5px; border-radius: 4px;"><br><input type="text" value="${fullUrl}" readonly style="width: 100%; font-size: 0.7rem; padding: 4px; margin-top: 5px; text-align: center; border: 1px solid #ccc; border-radius: 4px;" onclick="this.select()"></div>`;
+                return `<div class="qr-card"><b>🪑 ${m}</b><br><img src="${qrImg}" style="width: 110px; height: 110px; margin-top: 5px;"><br><input type="text" value="${fullUrl}" readonly style="width:100%; font-size:0.65rem; text-align:center;" onclick="this.select()"></div>`;
             }).join('');
         }
     </script>
