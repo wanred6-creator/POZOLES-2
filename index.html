@@ -24,6 +24,9 @@
         .menu-item { background: white; padding: 12px; margin-bottom: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .menu-item.sold-out { opacity: 0.45; background: #f1f1f1; cursor: not-allowed !important; }
         .menu-img { width: 75px; height: 75px; border-radius: 10px; object-fit: cover; border: 1px solid #eee; flex-shrink: 0; }
+        
+        .action-group { display: flex; align-items: center; gap: 8px; }
+        .item-emoji { font-size: 1.4rem; }
         .add-btn { background: #d9534f; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .menu-item.sold-out .add-btn { background: #ccc; cursor: not-allowed; }
         
@@ -121,12 +124,17 @@
         <div style="font-size: 1.1rem; background: rgba(0,0,0,0.15); padding: 5px 10px; border-radius: 8px;" id="barTotalText">$0</div>
     </div>
 
-    <!-- MODAL PARA NOTAS Y EXTRAS -->
+    <!-- MODAL PARA SELECCIONAR TAMAÑO Y EXTRAS -->
     <div class="modal" id="customModal">
         <div class="modal-content">
             <h3 id="modalItemName"></h3>
             <p id="modalInstruction" style="font-size:0.8rem; color:#666; margin-top:5px;"></p>
             
+            <div id="sizeContainer" style="margin-top:10px; display:none;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#555;" id="sizeLabel">Tamaño:</label>
+                <div id="sizeOptions" style="display:flex; gap:8px; margin-top:5px"></div>
+            </div>
+
             <div id="pambazoStyleContainer" style="margin-top:10px; display:none;">
                 <label style="font-size:0.8rem; font-weight:bold; color:#555;">Término de cocinado:</label>
                 <div id="pambazoStyleOptions" style="display:flex; gap:8px; margin-top:5px"></div>
@@ -219,6 +227,11 @@
         let metodoPagoActual = "Efectivo";
         let subtotalActual = 0;
 
+        let selectedSize = null;
+        let selectedPambazoStyle = "Normal";
+        let selectedOptions = []; 
+        let currentItem = null;
+
         function handleHeaderTap() {
             tapCounter++;
             clearTimeout(tapTimer);
@@ -229,30 +242,38 @@
             }
         }
 
-        // MENÚ COMPLETO CON VARIANTES DIRECTAS Y ORDEN DE PRIORIDAD
+        // MENÚ CON LAS 4 OPCIONES EXACTAS DE POZOLE Y EL RESTO DE PLATILLOS
         const menu = [
-            // 1. POZOLES Y SUS VARIANTES
-            { id: "poz_ch_maciza", name: "Pozole Chico (Maciza)", category: "Pozoles y Caldos", price: 80, img: "pozole.jpg", hasTakeout: true },
-            { id: "poz_ch_surtida", name: "Pozole Chico (Surtida)", category: "Pozoles y Caldos", price: 80, img: "pozole.jpg", hasTakeout: true },
-            { id: "poz_ch_pollo", name: "Pozole Chico (Pollo)", category: "Pozoles y Caldos", price: 80, img: "pozole.jpg", hasTakeout: true },
-            { id: "poz_ch_cabeza", name: "Pozole Chico (Cabeza)", category: "Pozoles y Caldos", price: 80, img: "pozole.jpg", hasTakeout: true },
-            { id: "poz_ch_sin", name: "Pozole Chico (Sin carne)", category: "Pozoles y Caldos", price: 80, img: "pozole.jpg", hasTakeout: true },
-
-            { id: "poz_gr_maciza", name: "Pozole Grande (Maciza)", category: "Pozoles y Caldos", price: 100, img: "pozole.jpg", hasTakeout: true },
-            { id: "poz_gr_surtida", name: "Pozole Grande (Surtida)", category: "Pozoles y Caldos", price: 100, img: "pozole.jpg", hasTakeout: true },
-            { id: "poz_gr_pollo", name: "Pozole Grande (Pollo)", category: "Pozoles y Caldos", price: 100, img: "pozole.jpg", hasTakeout: true },
-            { id: "poz_gr_cabeza", name: "Pozole Grande (Cabeza)", category: "Pozoles y Caldos", price: 100, img: "pozole.jpg", hasTakeout: true },
-            { id: "poz_gr_sin", name: "Pozole Grande (Sin carne)", category: "Pozoles y Caldos", price: 100, img: "pozole.jpg", hasTakeout: true },
+            // 1. POZOLES (4 opciones principales con tamaños y emojis)
+            { 
+                id: "poz_maciza", name: "Pozole (Maciza)", category: "Pozoles y Caldos", 
+                sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], 
+                img: "pozole.jpg", hasTakeout: true, emoji: "🐷" 
+            },
+            { 
+                id: "poz_surtida", name: "Pozole (Surtida)", category: "Pozoles y Caldos", 
+                sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], 
+                img: "pozole.jpg", hasTakeout: true, emoji: "🐷" 
+            },
+            { 
+                id: "poz_pollo", name: "Pozole (Pollo)", category: "Pozoles y Caldos", 
+                sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], 
+                img: "pozole.jpg", hasTakeout: true, emoji: "🐤" 
+            },
+            { 
+                id: "poz_sin", name: "Pozole (Sin carne)", category: "Pozoles y Caldos", 
+                price: 70, img: "pozole.jpg", hasTakeout: true, emoji: "🍃" 
+            },
 
             // 2. COMPLEMENTOS DE POZOLE
-            { id: "tostadas_extras", name: "Tostadas extras", category: "Pozoles y Caldos", price: 2, img: "tostada_extra.jpg", hasTakeout: false },
-            { id: "crema_extra", name: "Crema extra", category: "Pozoles y Caldos", price: 10, img: "crema.jpg", hasTakeout: false },
+            { id: "tostadas_extras", name: "Tostadas extras", category: "Pozoles y Caldos", price: 2, img: "tostada_extra.jpg", hasTakeout: false, emoji: "🌽" },
+            { id: "crema_extra", name: "Crema extra", category: "Pozoles y Caldos", price: 10, img: "crema.jpg", hasTakeout: false, emoji: "🥛" },
 
-            // 3. PANCITA Y SUS VARIANTES
+            // 3. PANCITA
             { id: "pancita_chica", name: "Pancita Chica", category: "Pozoles y Caldos", price: 80, img: "pancita.jpg", hasTakeout: true },
             { id: "pancita_grande", name: "Pancita Grande", category: "Pozoles y Caldos", price: 100, img: "pancita.jpg", hasTakeout: true },
 
-            // 4. ANTOJITOS Y SUS VARIANTES
+            // 4. ANTOJITOS
             { id: "flautas_pollo", name: "Flautas de Pollo", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false },
             { id: "flautas_carne", name: "Flautas de Carne", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false },
 
@@ -274,32 +295,25 @@
             { id: "tostada_res", name: "Tostada de Res", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false },
             { id: "tostada_pata", name: "Tostada de Pata", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false },
 
-            // 5. BEBIDAS Y SUS VARIANTES
+            // 5. BEBIDAS
             { id: "jamaica_litro", name: "Agua de Jamaica (Litro)", category: "Bebidas", price: 40, img: "jamaica.jpg", hasTakeout: false },
             { id: "jamaica_medio", name: "Agua de Jamaica (Medio litro)", category: "Bebidas", price: 20, img: "jamaica.jpg", hasTakeout: false },
-
             { id: "cocacola", name: "Coca-Cola", category: "Bebidas", price: 30, img: "cocacola.jpg", hasTakeout: false },
-
             { id: "jarritos_pina", name: "Jarritos (Piña)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
             { id: "jarritos_mandarina", name: "Jarritos (Mandarina)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
             { id: "jarritos_limon", name: "Jarritos (Limón)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
             { id: "jarritos_uva", name: "Jarritos (Uva)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
             { id: "jarritos_tamarindo", name: "Jarritos (Tamarindo)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
             { id: "jarritos_tutifruti", name: "Jarritos (Tutifruti)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
-
             { id: "boing_mango", name: "Boing de Mango", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false },
             { id: "boing_manzana", name: "Boing de Manzana", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false },
             { id: "boing_guayaba", name: "Boing de Guayaba", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false },
-
             { id: "cafe", name: "Café de Olla", category: "Bebidas", price: 20, img: "cafe.jpg", hasTakeout: false }
         ];
 
         let carts = JSON.parse(localStorage.getItem('cartsData')) || { "Mesa 1": {}, "Mesa 2": {}, "Mesa 3": {}, "Mesa 4": {}, "Para llevar": {} };
         let activeTable = "Mesa 1";
         let currentCartLocation = "Mesa 1";
-        let selectedPambazoStyle = "Normal";
-        let selectedOptions = []; 
-        let currentItem = null;
 
         function saveCarts() {
             localStorage.setItem('cartsData', JSON.stringify(carts));
@@ -317,7 +331,14 @@
             if (menuContainer) {
                 menuContainer.innerHTML = menu.map(item => {
                     let isSoldOut = soldOut["ITEM_" + item.name];
-                    let priceText = isSoldOut ? `<span style="color:#d9534f; font-weight:bold; font-size:0.75rem;">No disponible por el momento</span>` : `$${item.price}.00`;
+                    let priceText = "";
+                    if (isSoldOut) {
+                        priceText = `<span style="color:#d9534f; font-weight:bold; font-size:0.75rem;">No disponible</span>`;
+                    } else if (item.sizes) {
+                        priceText = `Desde $${item.sizes[0].price}.00`;
+                    } else {
+                        priceText = `$${item.price}.00`;
+                    }
 
                     return `
                     <div class="menu-item ${isSoldOut ? 'sold-out' : ''}" onclick="${isSoldOut ? '' : `abrirModal('${item.id}')`}">
@@ -328,7 +349,10 @@
                                 <p>${priceText}</p>
                             </div>
                         </div>
-                        <button class="add-btn">${isSoldOut ? 'Agotado' : 'Agregar'}</button>
+                        <div class="action-group">
+                            ${item.emoji ? `<span class="item-emoji">${item.emoji}</span>` : ''}
+                            <button class="add-btn">${isSoldOut ? 'Agotado' : 'Agregar'}</button>
+                        </div>
                     </div>`;
                 }).join('');
             }
@@ -368,13 +392,34 @@
             selectedOptions = [];
             document.getElementById('modalItemName').innerText = `${currentItem.name} (${activeTable})`;
             
+            const sizeContainer = document.getElementById('sizeContainer');
+            const sizeOptionsDiv = document.getElementById('sizeOptions');
             const pambazoStyleContainer = document.getElementById('pambazoStyleContainer');
             const pambazoStyleOptionsDiv = document.getElementById('pambazoStyleOptions');
             const meatContainer = document.getElementById('meatContainer');
             const notesField = document.getElementById('itemNotes');
+            let soldOut = {};
+            try {
+                soldOut = JSON.parse(localStorage.getItem('soldOutOptions')) || {};
+            } catch (e) {
+                soldOut = {};
+            }
 
+            sizeContainer.style.display = "none";
             pambazoStyleContainer.style.display = "none";
+            meatContainer.style.display = "none";
             notesField.style.display = "block";
+
+            if (currentItem.sizes) {
+                sizeContainer.style.display = "block";
+                document.getElementById('sizeLabel').innerText = "Selecciona el tamaño:";
+                selectedSize = currentItem.sizes[0]; // por defecto Chico
+                sizeOptionsDiv.innerHTML = currentItem.sizes.map(s => `
+                    <div class="option-pill ${s.name === selectedSize.name ? 'active' : ''}" onclick="selectSize('${s.name}', ${s.price}, this)">${s.name} ($${s.price})</div>
+                `).join('');
+            } else {
+                selectedSize = null;
+            }
 
             if (currentItem.isPambazo) {
                 document.getElementById('modalInstruction').innerText = "Elige el término (ingrediente extra +$10)";
@@ -383,7 +428,6 @@
                 const estilos = ["Normal", "Dorado"];
                 pambazoStyleOptionsDiv.innerHTML = estilos.map(est => `
                     <div class="option-pill ${est === selectedPambazoStyle ? 'active' : ''}" onclick="selectPambazoStyle('${est}', this)">${est}</div>`).join('');
-                document.getElementById('optionsLabel').innerText = "Opciones:";
                 notesField.style.display = "none";
                 renderOptions();
             } else if (currentItem.options && currentItem.options.length > 0) {
@@ -391,7 +435,6 @@
                 renderOptions();
             } else {
                 document.getElementById('modalInstruction').innerText = "";
-                meatContainer.style.display = "none";
             }
 
             notesField.value = "";
@@ -407,6 +450,12 @@
             document.getElementById('customModal').style.display = 'flex';
         }
 
+        function selectSize(name, price, el) {
+            selectedSize = { name, price };
+            document.querySelectorAll('#sizeOptions .option-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+        }
+
         function selectPambazoStyle(style, el) {
             selectedPambazoStyle = style;
             document.querySelectorAll('#pambazoStyleOptions .option-pill').forEach(p => p.classList.remove('active'));
@@ -416,26 +465,14 @@
         function renderOptions() {
             const container = document.getElementById('meatOptions');
             const meatContainer = document.getElementById('meatContainer');
-            let soldOut = {};
-            try {
-                soldOut = JSON.parse(localStorage.getItem('soldOutOptions')) || {};
-            } catch (e) {
-                soldOut = {};
-            }
-
             if (currentItem.options && currentItem.options.length > 0) {
                 meatContainer.style.display = "block";
                 container.style.display = "flex";
-                container.innerHTML = currentItem.options.map(opt => {
-                    let key = currentItem.name + "_" + opt;
-                    if (soldOut[key]) {
-                        return `<div class="option-pill" style="opacity:0.3; text-decoration:line-through; background:#ddd; cursor:not-allowed;"><s>${opt}</s> (Agotado)</div>`;
-                    }
-                    return `<div class="option-pill" onclick="toggleOption('${opt}', this)">${opt}</div>`;
-                }).join('');
+                container.innerHTML = currentItem.options.map(opt => `
+                    <div class="option-pill" onclick="toggleOption('${opt}', this)">${opt}</div>
+                `).join('');
             } else { 
                 meatContainer.style.display = "none";
-                container.style.display = "none"; 
             }
         }
 
@@ -443,9 +480,7 @@
             if (currentItem.isPambazo) {
                 if (opt === "Sin papa" || opt === "Papa con chorizo") {
                     document.querySelectorAll('#meatOptions .option-pill').forEach(p => {
-                        if (p.innerText === "Sin papa" || p.innerText === "Papa con chorizo") {
-                            p.classList.remove('active');
-                        }
+                        if (p.innerText === "Sin papa" || p.innerText === "Papa con chorizo") p.classList.remove('active');
                     });
                     selectedOptions = selectedOptions.filter(o => o !== "Sin papa" && o !== "Papa con chorizo");
                     selectedOptions.push(opt);
@@ -471,10 +506,14 @@
         }
 
         function agregarAlCarrito() {
-            let price = currentItem.price;
+            let price = selectedSize ? selectedSize.price : currentItem.price;
             let finalName = currentItem.name;
             let takeout = document.getElementById('takeoutCheck').checked;
             
+            if (selectedSize) {
+                finalName += ` (${selectedSize.name})`;
+            }
+
             if (currentItem.isPambazo) {
                 finalName = `${currentItem.name} (${selectedPambazoStyle})`;
                 selectedOptions.forEach(opt => {
@@ -488,7 +527,7 @@
             if (takeout) { price += 5; finalName += " (Llevar)"; }
             
             const notes = currentItem.isPambazo ? "" : document.getElementById('itemNotes').value;
-            const key = currentItem.id + selectedPambazoStyle + selectedOptions.join(',') + takeout + notes;
+            const key = currentItem.id + (selectedSize ? selectedSize.name : '') + selectedPambazoStyle + selectedOptions.join(',') + takeout + notes;
             
             if (!carts[currentCartLocation]) carts[currentCartLocation] = {};
             carts[currentCartLocation][key] = { 
