@@ -124,7 +124,7 @@
         <div style="font-size: 1.1rem; background: rgba(0,0,0,0.15); padding: 5px 10px; border-radius: 8px;" id="barTotalText">$0</div>
     </div>
 
-    <!-- MODAL PARA SELECCIONAR TAMAÑO Y EXTRAS -->
+    <!-- MODAL PARA CONFIGURAR PEDIDO -->
     <div class="modal" id="customModal">
         <div class="modal-content">
             <h3 id="modalItemName"></h3>
@@ -133,6 +133,11 @@
             <div id="sizeContainer" style="margin-top:10px; display:none;">
                 <label style="font-size:0.8rem; font-weight:bold; color:#555;" id="sizeLabel">Tamaño:</label>
                 <div id="sizeOptions" style="display:flex; gap:8px; margin-top:5px"></div>
+            </div>
+
+            <div id="quantityContainer" style="margin-top:10px; display:none;">
+                <label style="font-size:0.8rem; font-weight:bold; color:#555;">Cantidad de piezas:</label>
+                <input type="number" id="qtyInput" value="1" min="1" max="50" style="width:100%; padding:8px; margin-top:5px; border:1px solid #ccc; border-radius:6px; font-weight:bold;">
             </div>
 
             <div id="pambazoStyleContainer" style="margin-top:10px; display:none;">
@@ -242,73 +247,60 @@
             }
         }
 
-        // MENÚ CON LAS 4 OPCIONES EXACTAS DE POZOLE Y EL RESTO DE PLATILLOS
+        // MENÚ COMPLETO CON EMOJIS Y NUEVAS OPCIONES DE FLAUTAS Y TOSTADAS
         const menu = [
-            // 1. POZOLES (4 opciones principales con tamaños y emojis)
-            { 
-                id: "poz_maciza", name: "Pozole (Maciza)", category: "Pozoles y Caldos", 
-                sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], 
-                img: "pozole.jpg", hasTakeout: true, emoji: "🐷" 
-            },
-            { 
-                id: "poz_surtida", name: "Pozole (Surtida)", category: "Pozoles y Caldos", 
-                sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], 
-                img: "pozole.jpg", hasTakeout: true, emoji: "🐷" 
-            },
-            { 
-                id: "poz_pollo", name: "Pozole (Pollo)", category: "Pozoles y Caldos", 
-                sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], 
-                img: "pozole.jpg", hasTakeout: true, emoji: "🐤" 
-            },
-            { 
-                id: "poz_sin", name: "Pozole (Sin carne)", category: "Pozoles y Caldos", 
-                price: 70, img: "pozole.jpg", hasTakeout: true, emoji: "🍃" 
-            },
+            // 1. POZOLES
+            { id: "poz_maciza", name: "Pozole (Maciza)", category: "Pozoles y Caldos", sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], img: "pozole.jpg", hasTakeout: true, emoji: "🐷" },
+            { id: "poz_surtida", name: "Pozole (Surtida)", category: "Pozoles y Caldos", sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], img: "pozole.jpg", hasTakeout: true, emoji: "🐷" },
+            { id: "poz_pollo", name: "Pozole (Pollo)", category: "Pozoles y Caldos", sizes: [{name: "Chico", price: 80}, {name: "Grande", price: 100}], img: "pozole.jpg", hasTakeout: true, emoji: "🐤" },
+            { id: "poz_sin", name: "Pozole (Sin carne)", category: "Pozoles y Caldos", price: 70, img: "pozole.jpg", hasTakeout: true, emoji: "🍃" },
 
-            // 2. COMPLEMENTOS DE POZOLE
-            { id: "tostadas_extras", name: "Tostadas extras", category: "Pozoles y Caldos", price: 2, img: "tostada_extra.jpg", hasTakeout: false, emoji: "🌽" },
+            // 2. COMPLEMENTOS
+            { id: "tostadas_extras", name: "Tostadas extras", category: "Pozoles y Caldos", price: 2, img: "tostada_extra.jpg", hasTakeout: false, emoji: "🌽", isQuantityable: true },
             { id: "crema_extra", name: "Crema extra", category: "Pozoles y Caldos", price: 10, img: "crema.jpg", hasTakeout: false, emoji: "🥛" },
 
             // 3. PANCITA
-            { id: "pancita_chica", name: "Pancita Chica", category: "Pozoles y Caldos", price: 80, img: "pancita.jpg", hasTakeout: true },
-            { id: "pancita_grande", name: "Pancita Grande", category: "Pozoles y Caldos", price: 100, img: "pancita.jpg", hasTakeout: true },
+            { id: "pancita_chica", name: "Pancita Chica", category: "Pozoles y Caldos", price: 80, img: "pancita.jpg", hasTakeout: true, emoji: "🥣" },
+            { id: "pancita_grande", name: "Pancita Grande", category: "Pozoles y Caldos", price: 100, img: "pancita.jpg", hasTakeout: true, emoji: "🥣" },
 
             // 4. ANTOJITOS
-            { id: "flautas_pollo", name: "Flautas de Pollo", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false },
-            { id: "flautas_carne", name: "Flautas de Carne", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false },
+            { id: "flautas_pollo", name: "Flautas de Pollo (Orden de 3 piezas)", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false, emoji: "🌮" },
+            { id: "flautas_carne", name: "Flautas de Carne (Orden de 3 piezas)", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false, emoji: "🌮" },
+            { id: "flautas_mixtas", name: "Flautas Mixtas (Orden de 3 piezas)", category: "Antojitos", price: 75, img: "flautas.jpg", hasTakeout: false, emoji: "🌮", isFlautasMixtas: true, options: ["Pollo", "Carne"] },
+            { id: "flauta_individual", name: "Flauta individual (1 pieza)", category: "Antojitos", price: 25, img: "flautas.jpg", hasTakeout: false, emoji: "🌮", options: ["Pollo", "Carne"] },
 
-            { id: "gordita_chicharron", name: "Gordita clásica (Chicharrón prensado)", category: "Antojitos", price: 35, options: ["Quesillo", "Carne", "Pollo"], img: "gordita.jpg", hasTakeout: false, isMulti: true },
-            { id: "gordita_quesillo", name: "Gordita de Quesillo", category: "Antojitos", price: 35, options: ["Carne", "Pollo"], img: "gordita.jpg", hasTakeout: false, isMulti: true },
-            { id: "gordita_carne", name: "Gordita de Carne", category: "Antojitos", price: 35, options: ["Quesillo", "Pollo"], img: "gordita.jpg", hasTakeout: false, isMulti: true },
-            { id: "gordita_pollo", name: "Gordita de Pollo", category: "Antojitos", price: 35, options: ["Quesillo", "Carne"], img: "gordita.jpg", hasTakeout: false, isMulti: true },
+            { id: "gordita_chicharron", name: "Gordita clásica (Chicharrón prensado)", category: "Antojitos", price: 35, options: ["Quesillo", "Carne", "Pollo"], img: "gordita.jpg", hasTakeout: false, isMulti: true, emoji: "🫓" },
+            { id: "gordita_quesillo", name: "Gordita de Quesillo", category: "Antojitos", price: 35, options: ["Carne", "Pollo"], img: "gordita.jpg", hasTakeout: false, isMulti: true, emoji: "🫓" },
+            { id: "gordita_carne", name: "Gordita de Carne", category: "Antojitos", price: 35, options: ["Quesillo", "Pollo"], img: "gordita.jpg", hasTakeout: false, isMulti: true, emoji: "🫓" },
+            { id: "gordita_pollo", name: "Gordita de Pollo", category: "Antojitos", price: 35, options: ["Quesillo", "Carne"], img: "gordita.jpg", hasTakeout: false, isMulti: true, emoji: "🫓" },
 
-            { id: "quesadilla_quesillo", name: "Quesadilla de Quesillo", category: "Antojitos", price: 30, options: ["Hongos", "Flor", "Carne", "Pollo"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
-            { id: "quesadilla_carne", name: "Quesadilla de Carne", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos", "Flor"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
-            { id: "quesadilla_chicharron", name: "Quesadilla de Chicharrón", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
-            { id: "quesadilla_hongos", name: "Quesadilla de Hongos", category: "Antojitos", price: 30, options: ["Quesillo", "Flor"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
-            { id: "quesadilla_flor", name: "Quesadilla de Flor de Calabaza", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
-            { id: "quesadilla_pollo", name: "Quesadilla de Pollo", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true },
+            { id: "quesadilla_quesillo", name: "Quesadilla de Quesillo", category: "Antojitos", price: 30, options: ["Hongos", "Flor", "Carne", "Pollo"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🧀" },
+            { id: "quesadilla_carne", name: "Quesadilla de Carne", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos", "Flor"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🧀" },
+            { id: "quesadilla_chicharron", name: "Quesadilla de Chicharrón", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🧀" },
+            { id: "quesadilla_hongos", name: "Quesadilla de Hongos", category: "Antojitos", price: 30, options: ["Quesillo", "Flor"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🧀" },
+            { id: "quesadilla_flor", name: "Quesadilla de Flor de Calabaza", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🧀" },
+            { id: "quesadilla_pollo", name: "Quesadilla de Pollo", category: "Antojitos", price: 30, options: ["Quesillo", "Hongos"], img: "quesadilla.jpg", hasTakeout: false, isMulti: true, emoji: "🧀" },
 
-            { id: "pambazo", name: "Pambazo", category: "Antojitos", price: 35, options: ["Sin papa", "Papa con chorizo", "Pollo", "Carne", "Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true },
+            { id: "pambazo", name: "Pambazo", category: "Antojitos", price: 35, options: ["Sin papa", "Papa con chorizo", "Pollo", "Carne", "Quesillo"], img: "pambazo.jpg", hasTakeout: false, isPambazo: true, emoji: "🥖" },
 
-            { id: "tostada_pollo", name: "Tostada de Pollo", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false },
-            { id: "tostada_res", name: "Tostada de Res", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false },
-            { id: "tostada_pata", name: "Tostada de Pata", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false },
+            { id: "tostada_pollo", name: "Tostada de Pollo", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false, emoji: "🥠" },
+            { id: "tostada_res", name: "Tostada de Res", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false, emoji: "🥠" },
+            { id: "tostada_pata", name: "Tostada de Pata", category: "Antojitos", price: 30, img: "tostada.jpg", hasTakeout: false, emoji: "🥠" },
 
             // 5. BEBIDAS
-            { id: "jamaica_litro", name: "Agua de Jamaica (Litro)", category: "Bebidas", price: 40, img: "jamaica.jpg", hasTakeout: false },
-            { id: "jamaica_medio", name: "Agua de Jamaica (Medio litro)", category: "Bebidas", price: 20, img: "jamaica.jpg", hasTakeout: false },
-            { id: "cocacola", name: "Coca-Cola", category: "Bebidas", price: 30, img: "cocacola.jpg", hasTakeout: false },
-            { id: "jarritos_pina", name: "Jarritos (Piña)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
-            { id: "jarritos_mandarina", name: "Jarritos (Mandarina)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
-            { id: "jarritos_limon", name: "Jarritos (Limón)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
-            { id: "jarritos_uva", name: "Jarritos (Uva)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
-            { id: "jarritos_tamarindo", name: "Jarritos (Tamarindo)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
-            { id: "jarritos_tutifruti", name: "Jarritos (Tutifruti)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false },
-            { id: "boing_mango", name: "Boing de Mango", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false },
-            { id: "boing_manzana", name: "Boing de Manzana", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false },
-            { id: "boing_guayaba", name: "Boing de Guayaba", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false },
-            { id: "cafe", name: "Café de Olla", category: "Bebidas", price: 20, img: "cafe.jpg", hasTakeout: false }
+            { id: "jamaica_litro", name: "Agua de Jamaica (Litro)", category: "Bebidas", price: 40, img: "jamaica.jpg", hasTakeout: false, emoji: "🥤" },
+            { id: "jamaica_medio", name: "Agua de Jamaica (Medio litro)", category: "Bebidas", price: 20, img: "jamaica.jpg", hasTakeout: false, emoji: "🥤" },
+            { id: "cocacola", name: "Coca-Cola", category: "Bebidas", price: 30, img: "cocacola.jpg", hasTakeout: false, emoji: "🧃" },
+            { id: "jarritos_pina", name: "Jarritos (Piña)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤" },
+            { id: "jarritos_mandarina", name: "Jarritos (Mandarina)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤" },
+            { id: "jarritos_limon", name: "Jarritos (Limón)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤" },
+            { id: "jarritos_uva", name: "Jarritos (Uva)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤" },
+            { id: "jarritos_tamarindo", name: "Jarritos (Tamarindo)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤" },
+            { id: "jarritos_tutifruti", name: "Jarritos (Tutifruti)", category: "Bebidas", price: 30, img: "jarritos.jpg", hasTakeout: false, emoji: "🥤" },
+            { id: "boing_mango", name: "Boing de Mango", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false, emoji: "🧃" },
+            { id: "boing_manzana", name: "Boing de Manzana", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false, emoji: "🧃" },
+            { id: "boing_guayaba", name: "Boing de Guayaba", category: "Bebidas", price: 30, img: "boing.jpg", hasTakeout: false, emoji: "🧃" },
+            { id: "cafe", name: "Café", category: "Bebidas", price: 20, img: "cafe.jpg", hasTakeout: false, emoji: "☕" }
         ];
 
         let carts = JSON.parse(localStorage.getItem('cartsData')) || { "Mesa 1": {}, "Mesa 2": {}, "Mesa 3": {}, "Mesa 4": {}, "Para llevar": {} };
@@ -394,18 +386,15 @@
             
             const sizeContainer = document.getElementById('sizeContainer');
             const sizeOptionsDiv = document.getElementById('sizeOptions');
+            const quantityContainer = document.getElementById('quantityContainer');
+            const qtyInput = document.getElementById('qtyInput');
             const pambazoStyleContainer = document.getElementById('pambazoStyleContainer');
             const pambazoStyleOptionsDiv = document.getElementById('pambazoStyleOptions');
             const meatContainer = document.getElementById('meatContainer');
             const notesField = document.getElementById('itemNotes');
-            let soldOut = {};
-            try {
-                soldOut = JSON.parse(localStorage.getItem('soldOutOptions')) || {};
-            } catch (e) {
-                soldOut = {};
-            }
 
             sizeContainer.style.display = "none";
+            quantityContainer.style.display = "none";
             pambazoStyleContainer.style.display = "none";
             meatContainer.style.display = "none";
             notesField.style.display = "block";
@@ -413,12 +402,17 @@
             if (currentItem.sizes) {
                 sizeContainer.style.display = "block";
                 document.getElementById('sizeLabel').innerText = "Selecciona el tamaño:";
-                selectedSize = currentItem.sizes[0]; // por defecto Chico
+                selectedSize = currentItem.sizes[0];
                 sizeOptionsDiv.innerHTML = currentItem.sizes.map(s => `
                     <div class="option-pill ${s.name === selectedSize.name ? 'active' : ''}" onclick="selectSize('${s.name}', ${s.price}, this)">${s.name} ($${s.price})</div>
                 `).join('');
             } else {
                 selectedSize = null;
+            }
+
+            if (currentItem.isQuantityable) {
+                quantityContainer.style.display = "block";
+                qtyInput.value = "1";
             }
 
             if (currentItem.isPambazo) {
@@ -430,8 +424,11 @@
                     <div class="option-pill ${est === selectedPambazoStyle ? 'active' : ''}" onclick="selectPambazoStyle('${est}', this)">${est}</div>`).join('');
                 notesField.style.display = "none";
                 renderOptions();
+            } else if (currentItem.isFlautasMixtas) {
+                document.getElementById('modalInstruction').innerText = "Selecciona cómo combinas tus 3 piezas:";
+                renderOptions();
             } else if (currentItem.options && currentItem.options.length > 0) {
-                document.getElementById('modalInstruction').innerText = "Puedes agregar extras (+$5 c/u):";
+                document.getElementById('modalInstruction').innerText = "Selecciona una opción:";
                 renderOptions();
             } else {
                 document.getElementById('modalInstruction').innerText = "";
@@ -494,14 +491,18 @@
                         el.classList.add('active');
                     }
                 }
-            } else if (currentItem.isMulti) {
+            } else if (currentItem.isMulti || currentItem.isFlautasMixtas) {
                 if (selectedOptions.includes(opt)) {
                     selectedOptions = selectedOptions.filter(o => o !== opt);
                     el.classList.remove('active');
-                } else if (selectedOptions.length < 2) {
+                } else {
                     selectedOptions.push(opt);
                     el.classList.add('active');
                 }
+            } else {
+                selectedOptions = [opt];
+                document.querySelectorAll('#meatOptions .option-pill').forEach(p => p.classList.remove('active'));
+                el.classList.add('active');
             }
         }
 
@@ -509,9 +510,14 @@
             let price = selectedSize ? selectedSize.price : currentItem.price;
             let finalName = currentItem.name;
             let takeout = document.getElementById('takeoutCheck').checked;
-            
+            let quantity = 1;
+
             if (selectedSize) {
                 finalName += ` (${selectedSize.name})`;
+            }
+
+            if (currentItem.isQuantityable) {
+                quantity = parseInt(document.getElementById('qtyInput').value) || 1;
             }
 
             if (currentItem.isPambazo) {
@@ -530,14 +536,19 @@
             const key = currentItem.id + (selectedSize ? selectedSize.name : '') + selectedPambazoStyle + selectedOptions.join(',') + takeout + notes;
             
             if (!carts[currentCartLocation]) carts[currentCartLocation] = {};
-            carts[currentCartLocation][key] = { 
-                name: finalName, 
-                category: currentItem.category,
-                price: price, 
-                options: selectedOptions, 
-                notes: notes, 
-                qty: (carts[currentCartLocation][key]?.qty || 0) + 1 
-            };
+            
+            if (carts[currentCartLocation][key]) {
+                carts[currentCartLocation][key].qty += quantity;
+            } else {
+                carts[currentCartLocation][key] = { 
+                    name: finalName, 
+                    category: currentItem.category,
+                    price: price, 
+                    options: selectedOptions, 
+                    notes: notes, 
+                    qty: quantity 
+                };
+            }
 
             saveCarts();
             document.getElementById('customModal').style.display = 'none';
